@@ -26,17 +26,6 @@ A modern, feature-rich code snippets management platform built for developers wh
 - **Visual Sharing**: Generate beautiful code snippet images for social media and documentation
 - **Link Sharing**: Share direct links to your public snippets
 
-## 🛠️ Tech Stack
-
-This project leverages modern web technologies for optimal performance and developer experience:
-
-- **Framework**: Next.js (Latest Version)
-- **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
-- **Language**: TypeScript
-- **Database**: PostgreSQL
-- **Editor**: MDX for rich code snippet editing
-
 ## 📋 Current Status
 
 **Snippy is currently in MVP stage** - we're focusing on core functionality and user experience. This means the essential features are working beautifully, with more advanced features planned for future releases.
