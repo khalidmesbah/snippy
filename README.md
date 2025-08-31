@@ -1,98 +1,141 @@
-# Snippy 📝
+# Snippy
 
-A modern, feature-rich code snippets management platform built for developers who want to organize, share, and discover code snippets with ease.
+A modern, feature-rich platform to create, organize, discover, and share code snippets. This monorepo contains a React client and a Go server with a REST API.
 
-## ✨ Features
+## Repository Structure
 
-### Core Functionality
+```
+client/   # React (Vite + TypeScript + TanStack Router) UI
+server/   # Go HTTP API, auth, database, migrations, scripts
+docs/     # Project documentation (moved from scattered .md files)
+README.md # This file
+```
 
-- **Create & Manage**: Add, edit, and delete your code snippets with an intuitive MDX editor
-- **Smart Collections**: Organize snippets into custom collections by topic (JavaScript, CSS, Python, etc.)
-- **Flexible Organization**: Reorder snippets within collections with simple drag-and-drop functionality
-- **Privacy Controls**: Make snippets public for sharing or keep them private
-- **Advanced Search**: Search through snippet content, not just titles - find exactly what you're looking for
-- **Share Everything**: Share snippets as beautiful images or direct links
+## Features
 
-### Pages & Navigation
+- **Snippet management**: Create, read, update, delete, and search snippets
+- **Collections**: Organize snippets into customizable collections
+- **Tags**: Classify snippets with user-owned tags
+- **Privacy**: Keep snippets private or make them public
+- **Explore**: Browse public snippets from the community
+- **Forking**: Copy public snippets into your own library
+- **Auth**: Clerk-based authentication (session cookie)
 
-- **🏠 Home**: Clean interface with search bar and snippet management tools - displays all your snippets in one organized view
-- **🌍 Explore**: Discover and browse public snippets shared by the community
-- **📚 Library**: Organize snippets into custom collections (JavaScript, Python, CSS, etc.) with drag-and-drop reordering
-- **👤 Profile**: Manage your account and view your snippet statistics
+## Prerequisites
 
-### Sharing & Collaboration
+- Node.js and pnpm
+- Go 1.23+
+- PostgreSQL (local or hosted)
+- Clerk account (publishable + secret keys)
 
-- **Fork Snippets**: Found something useful? Fork public snippets to your own collection
-- **Visual Sharing**: Generate beautiful code snippet images for social media and documentation
-- **Link Sharing**: Share direct links to your public snippets
+## Quick Start
 
-## 📋 Current Status
+### 1) Server setup
 
-**Snippy is currently in MVP stage** - we're focusing on core functionality and user experience. This means the essential features are working beautifully, with more advanced features planned for future releases.
+```
+cd server
+cp env.example .env
+```
 
-## 🎯 How It Works
+Set env vars in `.env`:
 
-1. **Create**: Use our MDX editor to write snippets with rich formatting and syntax highlighting
-2. **Organize**: Create custom collections for different topics and reorder snippets as needed
-3. **Search**: Use the clean search interface with sort, filter, and shuffle options to find snippets quickly
-4. **Share**: Make snippets public and share them as links or download as beautiful code images
-5. **Discover**: Browse the explore page to find useful snippets from other developers
-6. **Fork**: Found something useful? Fork it to your collection and customize it
+```
+CLERK_SECRET_KEY=sk_test_...
+CLERK_PUBLISHABLE_KEY=pk_test_...
+DATABASE_URL=postgresql://user:password@host:port/db
+PORT=8080
+```
 
-## 📱 User Experience
+Run migrations and start:
 
-### Snippet Management
+```
+./scripts/setup.sh     # or: make setup-db
+go run ./cmd/api/main.go  # or: make run
+```
 
-- Minimalist snippet cards showing title and essential actions
-- Click any snippet to view the full content and edit it
-- Clean home page with search bar and filtering options at the top
-- Collections-based organization with drag-and-drop reordering
+### 2) Client setup
 
-### Search & Discovery
+```
+cd client
+pnpm install
+```
 
-- Deep search functionality that looks inside snippet content
-- Sort, filter, and shuffle options for different viewing preferences
-- Random snippet discovery for inspiration
-- Community explore page for discovering new techniques
+Create `.env.local` with:
 
-### Collections System
+```
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+VITE_API_BASE_URL=http://localhost:8080
+```
 
-- Create custom collections for different topics (JavaScript, CSS, Python, etc.)
-- Built-in favorites collection for your most-used snippets
-- Reorder snippets within any collection
-- Full CRUD operations on collections (create, edit, delete)
+Start the client:
 
-## 🎨 Design Philosophy
+```
+pnpm start
+```
 
-Snippy embraces minimalism and simplicity:
+## API Endpoints
 
-- **Clean Interface**: Simple, functional components without unnecessary animations
-- **Focus on Content**: The code snippets are the star - everything else stays out of the way
-- **Efficient Workflow**: Streamlined actions for common tasks like creating, organizing, and sharing
-- **Responsive Design**: Works seamlessly across desktop and mobile devices
+Base URL: `http://localhost:8080`
 
-## 🧪 Test Data
+- Public (no auth)
+  - `GET /health`
+  - `GET /debug`
+  - `GET /api/snippets/public`
+  - `GET /api/snippets/public/user`
 
-To help with development and testing, Snippy includes:
+- Protected (Clerk session cookie required)
+  - Collections
+    - `GET /api/collections`
+    - `POST /api/collections/create`
+    - `PUT /api/collections/{id}`
+    - `DELETE /api/collections/{id}`
+  - Snippets
+    - `GET /api/snippets`
+    - `GET /api/snippets/{id}`
+    - `POST /api/snippets/create`
+    - `PUT /api/snippets/{id}`
+    - `DELETE /api/snippets/{id}`
+    - `POST /api/snippets/fork`
+  - Tags
+    - `GET /api/tags`
+    - `POST /api/tags/create`
+    - `PUT /api/tags/{id}`
+    - `DELETE /api/tags/{id}`
 
-- **20 sample snippets** covering various programming languages and common use cases
-- **4 pre-built collections**: JavaScript, CSS, Python, and Utilities
-- **Real-world examples** to demonstrate the platform's capabilities
+Example (create snippet):
 
-## 🚀 Getting Started
+```bash
+curl -X POST http://localhost:8080/api/snippets/create \
+  -H 'Content-Type: application/json' \
+  --cookie "__session=your_clerk_session" \
+  -d '{
+    "collection_id": "550e8400-e29b-41d4-a716-446655440001",
+    "title": "Array Shuffle",
+    "content": "function shuffleArray(array) { ... }",
+    "tags": ["javascript", "array"],
+    "is_public": true
+  }'
+```
 
-This project is built with developer experience in mind. The codebase follows modern Next.js patterns with TypeScript for type safety and Tailwind for rapid, consistent styling.
+## Development
 
-## 📈 Roadmap
+- Server
+  - `make run`, `make build`, `make migrate-up`, `go test ./...`
+- Client
+  - `pnpm start`, `pnpm build`, `pnpm test`, `pnpm lint`
 
-As an MVP, Snippy focuses on core snippet management and sharing. Future enhancements will expand collaboration features, advanced organization tools, and community features based on user feedback.
+## Documentation
 
-## 🤝 Contributing
+All project docs are consolidated under `docs/`. Notable files include:
 
-We welcome contributions to make Snippy even better! Whether it's bug reports, feature requests, or code contributions, your input helps shape the future of snippet management.
+- `docs/server_README.md` – server details
+- `docs/migrations_README.md` – database migrations
+- `docs/API_ENDPOINTS.md` – additional API notes
+
+## Contributing
+
+Issues and PRs are welcome. Please include tests where applicable.
 
 ---
 
-**Built with ❤️ for the developer community**
-
-_Snippy makes code snippet management simple, powerful, and social._
+Built with ❤️ for the developer community.

@@ -9,25 +9,45 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as LibraryRouteImport } from './routes/library'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CollectionsRouteImport } from './routes/collections'
+import { Route as AddSnippetRouteImport } from './routes/add-snippet'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SnippetIdRouteImport } from './routes/snippet.$id'
+import { Route as EditSnippetIdRouteImport } from './routes/edit-snippet.$id'
+import { Route as CollectionIdRouteImport } from './routes/collection.$id'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LibraryRoute = LibraryRouteImport.update({
-  id: '/library',
-  path: '/library',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsRoute = CollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AddSnippetRoute = AddSnippetRouteImport.update({
+  id: '/add-snippet',
+  path: '/add-snippet',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -40,47 +60,115 @@ const SnippetIdRoute = SnippetIdRouteImport.update({
   path: '/snippet/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EditSnippetIdRoute = EditSnippetIdRouteImport.update({
+  id: '/edit-snippet/$id',
+  path: '/edit-snippet/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionIdRoute = CollectionIdRouteImport.update({
+  id: '/collection/$id',
+  path: '/collection/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/add-snippet': typeof AddSnippetRoute
+  '/collections': typeof CollectionsRoute
+  '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
-  '/library': typeof LibraryRoute
   '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/collection/$id': typeof CollectionIdRoute
+  '/edit-snippet/$id': typeof EditSnippetIdRoute
   '/snippet/$id': typeof SnippetIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/add-snippet': typeof AddSnippetRoute
+  '/collections': typeof CollectionsRoute
+  '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
-  '/library': typeof LibraryRoute
   '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/collection/$id': typeof CollectionIdRoute
+  '/edit-snippet/$id': typeof EditSnippetIdRoute
   '/snippet/$id': typeof SnippetIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/add-snippet': typeof AddSnippetRoute
+  '/collections': typeof CollectionsRoute
+  '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
-  '/library': typeof LibraryRoute
   '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/collection/$id': typeof CollectionIdRoute
+  '/edit-snippet/$id': typeof EditSnippetIdRoute
   '/snippet/$id': typeof SnippetIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/explore' | '/library' | '/profile' | '/snippet/$id'
+  fullPaths:
+    | '/'
+    | '/add-snippet'
+    | '/collections'
+    | '/dashboard'
+    | '/explore'
+    | '/profile'
+    | '/settings'
+    | '/collection/$id'
+    | '/edit-snippet/$id'
+    | '/snippet/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/explore' | '/library' | '/profile' | '/snippet/$id'
-  id: '__root__' | '/' | '/explore' | '/library' | '/profile' | '/snippet/$id'
+  to:
+    | '/'
+    | '/add-snippet'
+    | '/collections'
+    | '/dashboard'
+    | '/explore'
+    | '/profile'
+    | '/settings'
+    | '/collection/$id'
+    | '/edit-snippet/$id'
+    | '/snippet/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/add-snippet'
+    | '/collections'
+    | '/dashboard'
+    | '/explore'
+    | '/profile'
+    | '/settings'
+    | '/collection/$id'
+    | '/edit-snippet/$id'
+    | '/snippet/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AddSnippetRoute: typeof AddSnippetRoute
+  CollectionsRoute: typeof CollectionsRoute
+  DashboardRoute: typeof DashboardRoute
   ExploreRoute: typeof ExploreRoute
-  LibraryRoute: typeof LibraryRoute
   ProfileRoute: typeof ProfileRoute
+  SettingsRoute: typeof SettingsRoute
+  CollectionIdRoute: typeof CollectionIdRoute
+  EditSnippetIdRoute: typeof EditSnippetIdRoute
   SnippetIdRoute: typeof SnippetIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -88,18 +176,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/library': {
-      id: '/library'
-      path: '/library'
-      fullPath: '/library'
-      preLoaderRoute: typeof LibraryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/explore': {
       id: '/explore'
       path: '/explore'
       fullPath: '/explore'
       preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections': {
+      id: '/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof CollectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/add-snippet': {
+      id: '/add-snippet'
+      path: '/add-snippet'
+      fullPath: '/add-snippet'
+      preLoaderRoute: typeof AddSnippetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -116,14 +218,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SnippetIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/edit-snippet/$id': {
+      id: '/edit-snippet/$id'
+      path: '/edit-snippet/$id'
+      fullPath: '/edit-snippet/$id'
+      preLoaderRoute: typeof EditSnippetIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collection/$id': {
+      id: '/collection/$id'
+      path: '/collection/$id'
+      fullPath: '/collection/$id'
+      preLoaderRoute: typeof CollectionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AddSnippetRoute: AddSnippetRoute,
+  CollectionsRoute: CollectionsRoute,
+  DashboardRoute: DashboardRoute,
   ExploreRoute: ExploreRoute,
-  LibraryRoute: LibraryRoute,
   ProfileRoute: ProfileRoute,
+  SettingsRoute: SettingsRoute,
+  CollectionIdRoute: CollectionIdRoute,
+  EditSnippetIdRoute: EditSnippetIdRoute,
   SnippetIdRoute: SnippetIdRoute,
 }
 export const routeTree = rootRouteImport

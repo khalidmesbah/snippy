@@ -1,4 +1,5 @@
 onlyBuiltDependencies:
   - '@clerk/shared'
   - '@tailwindcss/oxide'
+  - es5-ext
   - esbuild

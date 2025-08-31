@@ -1,0 +1,20 @@
+{
+  "name": "Snippy",
+  "short_name": "Snippy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#7C3AED",
+  "icons": [
+    {
+      "src": "/icon-square.svg",
+      "sizes": "128x128 256x256 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Add Snippet", "url": "/add-snippet" },
+    { "name": "Library", "url": "/library" }
+  ]
+}
