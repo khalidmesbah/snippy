@@ -1,4 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Bell, Palette, Settings, Shield, User } from "lucide-react";
+import React, { useId } from "react";
+import { AuthWrapper } from "@/components/auth-wrapper";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,16 +11,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { useThemeSwitcher } from "@/hooks/use-theme-switcher";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Settings, Palette, Bell, Shield, User } from "lucide-react";
-import { AuthWrapper } from "@/components/auth-wrapper";
+import { useThemeSwitcher } from "@/hooks/use-theme-switcher";
 import { showNotification } from "@/lib/notifications";
-import React from "react";
 
 export const Route = createFileRoute("/settings")({
   component: () => (
@@ -26,11 +26,18 @@ export const Route = createFileRoute("/settings")({
 });
 
 function RouteComponent() {
-  const { theme, isLight, isDark } = useThemeSwitcher();
+  const { theme, isLight } = useThemeSwitcher();
   const [emailNotifications, setEmailNotifications] = React.useState(false);
   const [pushNotifications, setPushNotifications] = React.useState(false);
   const [publicProfile, setPublicProfile] = React.useState(false);
   const [analytics, setAnalytics] = React.useState(false);
+
+  // Generate unique IDs for form elements
+  const emailNotificationsId = useId();
+  const pushNotificationsId = useId();
+  const publicProfileId = useId();
+  const analyticsId = useId();
+  const fileInputId = useId();
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
@@ -96,13 +103,15 @@ function RouteComponent() {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="email-notifications">Email Notifications</Label>
+                <Label htmlFor={emailNotificationsId}>
+                  Email Notifications
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   Receive email updates about your snippets
                 </p>
               </div>
-              <Switch 
-                id="email-notifications" 
+              <Switch
+                id={emailNotificationsId}
                 checked={emailNotifications}
                 onCheckedChange={(checked) => {
                   setEmailNotifications(checked);
@@ -111,13 +120,13 @@ function RouteComponent() {
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="push-notifications">Push Notifications</Label>
+                <Label htmlFor={pushNotificationsId}>Push Notifications</Label>
                 <p className="text-sm text-muted-foreground">
                   Get notified about new features and updates
                 </p>
               </div>
-              <Switch 
-                id="push-notifications" 
+              <Switch
+                id={pushNotificationsId}
                 checked={pushNotifications}
                 onCheckedChange={(checked) => {
                   setPushNotifications(checked);
@@ -141,13 +150,13 @@ function RouteComponent() {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="public-profile">Public Profile</Label>
+                <Label htmlFor={publicProfileId}>Public Profile</Label>
                 <p className="text-sm text-muted-foreground">
                   Allow others to see your public snippets
                 </p>
               </div>
-              <Switch 
-                id="public-profile" 
+              <Switch
+                id={publicProfileId}
                 checked={publicProfile}
                 onCheckedChange={(checked) => {
                   setPublicProfile(checked);
@@ -156,13 +165,13 @@ function RouteComponent() {
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="analytics">Analytics</Label>
+                <Label htmlFor={analyticsId}>Analytics</Label>
                 <p className="text-sm text-muted-foreground">
                   Help improve Snippy with anonymous usage data
                 </p>
               </div>
-              <Switch 
-                id="analytics" 
+              <Switch
+                id={analyticsId}
                 checked={analytics}
                 onCheckedChange={(checked) => {
                   setAnalytics(checked);
@@ -216,23 +225,24 @@ function RouteComponent() {
               <div className="flex gap-2">
                 <input
                   type="file"
-                  id="import-file"
+                  id={fileInputId}
                   accept=".json,.zip"
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
                       // Handle file import logic here
-                      showNotification.info("File import", `Importing file: ${file.name}`);
+                      showNotification.info(
+                        "File import",
+                        `Importing file: ${file.name}`,
+                      );
                     }
                   }}
                 />
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    document.getElementById("import-file")?.click()
-                  }
+                  onClick={() => document.getElementById(fileInputId)?.click()}
                 >
                   Import
                 </Button>

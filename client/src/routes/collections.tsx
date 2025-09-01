@@ -1,15 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useUser } from "@clerk/clerk-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState, useRef } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { Loader2, Save } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { AuthWrapper } from "@/components/auth-wrapper";
 import { CollectionsGrid } from "@/components/collections/collections-grid";
 import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
+import { ErrorState, LoadingState } from "@/components/Loaders";
 import { Button } from "@/components/ui/button";
-import { Save, Loader2 } from "lucide-react";
-import { getCollections, updateCollectionPositions } from "@/lib/api/collections";
 import type { PositionUpdate } from "@/lib/api/collections";
-import { LoadingState, ErrorState } from "@/components/Loaders";
+import {
+  getCollections,
+  updateCollectionPositions,
+} from "@/lib/api/collections";
 import { showNotification } from "@/lib/notifications";
 
 export const Route = createFileRoute("/collections")({
@@ -24,7 +27,7 @@ function CollectionsPage() {
   const { user, isLoaded } = useUser();
   const queryClient = useQueryClient();
   const [hasMounted, setHasMounted] = useState(false);
-  const [hasPendingChanges, setHasPendingChanges] = useState(false);
+  const [_hasPendingChanges, setHasPendingChanges] = useState(false);
   const collectionsGridRef = useRef<{ handleSavePositions: () => void }>(null);
 
   // Fetch collections with TanStack Query
@@ -33,7 +36,7 @@ function CollectionsPage() {
     isLoading,
     error,
     refetch,
-    isFetching,
+    _isFetching,
   } = useQuery({
     queryKey: ["collections"],
     queryFn: getCollections,
@@ -54,7 +57,10 @@ function CollectionsPage() {
       queryClient.invalidateQueries({ queryKey: ["collections"] });
     },
     onError: (error) => {
-      showNotification.error("Failed to update collection positions", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "Failed to update collection positions",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
   });
 
@@ -77,7 +83,7 @@ function CollectionsPage() {
   };
 
   const collections = collectionsData?.data || [];
-  
+
   // Mark component as mounted
   useEffect(() => {
     setHasMounted(true);
@@ -93,7 +99,7 @@ function CollectionsPage() {
     }
   }, [hasMounted, isLoaded, user, refetch]);
 
-  const handlePositionsUpdate = (positions: PositionUpdate[]) => {
+  const handlePositionsUpdate = (_positions: PositionUpdate[]) => {
     // This is now just for UI updates, not for saving to the server
     // The actual saving happens when the save button is clicked
   };
@@ -182,7 +188,7 @@ function CollectionsPage() {
       {/* Error State */}
       {error && !isLoading && (
         <div className="py-12">
-          <ErrorState 
+          <ErrorState
             message={error.message || "An unknown error occurred"}
             onRetry={() => refetch()}
           />

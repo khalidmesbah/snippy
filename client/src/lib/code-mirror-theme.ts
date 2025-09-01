@@ -6,13 +6,13 @@
 export const getCustomCodeMirrorTheme = () => {
   // This will be used by MDXEditor internally
   return {
-    theme: 'custom-shadcn-theme',
+    theme: "custom-shadcn-theme",
     // The actual styling will be handled by CSS in styles.css
   };
 };
 
 // Export the theme name for reference
-export const customCodeMirrorThemeName = 'custom-shadcn-theme';
+export const customCodeMirrorThemeName = "custom-shadcn-theme";
 
 // Export a function to get extensions (if needed in the future)
 export const getCustomCodeMirrorExtensions = () => {
@@ -20,7 +20,7 @@ export const getCustomCodeMirrorExtensions = () => {
 };
 
 // For now, export an empty array to maintain compatibility
-export const customCodeMirrorThemeExtension: any[] = [];
+export const customCodeMirrorThemeExtension: unknown[] = [];
 
 // Export individual components for flexibility
 export { customCodeMirrorThemeName as theme };

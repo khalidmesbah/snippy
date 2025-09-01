@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Star, GitFork, Globe, Folder, Beaker } from "lucide-react";
+import { Folder, GitFork, Globe, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface CompactSnippetCardProps {
@@ -17,7 +17,10 @@ interface CompactSnippetCardProps {
   showStats?: boolean;
 }
 
-export const CompactSnippetCard = ({ snippet, showStats = false }: CompactSnippetCardProps) => (
+export const CompactSnippetCard = ({
+  snippet,
+  showStats = false,
+}: CompactSnippetCardProps) => (
   <Link to="/snippet/$id" params={{ id: snippet.id }} className="block">
     <div className="flex items-start justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
       <div className="flex-1 min-w-0">
@@ -27,7 +30,7 @@ export const CompactSnippetCard = ({ snippet, showStats = false }: CompactSnippe
             {new Date(snippet.created_at).toLocaleDateString()}
           </span>
         </div>
-        
+
         {/* Tags at the bottom */}
         {snippet.tag_names && snippet.tag_names.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
@@ -49,22 +52,18 @@ export const CompactSnippetCard = ({ snippet, showStats = false }: CompactSnippe
           </div>
         )}
       </div>
-      
+
       {/* Indicator icons at bottom right */}
       <div className="flex items-center gap-1 ml-3 mt-auto">
         {snippet.is_favorite && (
           <Star className="h-3 w-3 fill-current text-yellow-500" />
         )}
-        {snippet.is_public && (
-          <Globe className="h-3 w-3 text-blue-500" />
-        )}
-        {snippet.forked_from && (
-          <GitFork className="h-3 w-3 text-green-500" />
-        )}
+        {snippet.is_public && <Globe className="h-3 w-3 text-blue-500" />}
+        {snippet.forked_from && <GitFork className="h-3 w-3 text-green-500" />}
         {snippet.collection_id && (
           <Folder className="h-3 w-3 text-purple-500" />
         )}
-        
+
         {/* Stats if showStats is true */}
         {showStats && snippet.fork_count && snippet.fork_count > 0 && (
           <div className="flex items-center gap-1 ml-2 text-xs text-muted-foreground">

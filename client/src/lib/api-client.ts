@@ -2,7 +2,8 @@ import { useAuth } from "@clerk/clerk-react";
 import React from "react";
 import { showNotification } from "@/lib/notifications";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
 // Global function to get token (can be called from anywhere)
 let getTokenFunction: (() => Promise<string | null>) | null = null;
@@ -14,7 +15,7 @@ export function setTokenGetter(getter: () => Promise<string | null>) {
 // Create a custom hook for authenticated API calls
 export function useApiClient() {
   const { getToken } = useAuth();
-  
+
   // Set the global token getter when this hook is used
   React.useEffect(() => {
     setTokenGetter(getToken);
@@ -22,14 +23,16 @@ export function useApiClient() {
 
   const apiCall = async (
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<Response> => {
     try {
       // Get the JWT token from Clerk
       const token = await getToken();
-      
-      const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-      
+
+      const url = endpoint.startsWith("http")
+        ? endpoint
+        : `${API_BASE_URL}${endpoint}`;
+
       const defaultOptions: RequestInit = {
         credentials: "include",
         headers: {
@@ -42,7 +45,10 @@ export function useApiClient() {
 
       return await fetch(url, defaultOptions);
     } catch (error) {
-      showNotification.error("API call failed", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "API call failed",
+        error instanceof Error ? error.message : "An error occurred",
+      );
       throw error;
     }
   };
@@ -54,8 +60,10 @@ export function useApiClient() {
 export const apiClient = {
   async get(endpoint: string) {
     const token = getTokenFunction ? await getTokenFunction() : null;
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-    
+    const url = endpoint.startsWith("http")
+      ? endpoint
+      : `${API_BASE_URL}${endpoint}`;
+
     return fetch(url, {
       method: "GET",
       credentials: "include",
@@ -66,10 +74,12 @@ export const apiClient = {
     });
   },
 
-  async post(endpoint: string, data?: any) {
+  async post(endpoint: string, data?: unknown) {
     const token = getTokenFunction ? await getTokenFunction() : null;
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-    
+    const url = endpoint.startsWith("http")
+      ? endpoint
+      : `${API_BASE_URL}${endpoint}`;
+
     return fetch(url, {
       method: "POST",
       credentials: "include",
@@ -81,10 +91,12 @@ export const apiClient = {
     });
   },
 
-  async put(endpoint: string, data?: any) {
+  async put(endpoint: string, data?: unknown) {
     const token = getTokenFunction ? await getTokenFunction() : null;
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-    
+    const url = endpoint.startsWith("http")
+      ? endpoint
+      : `${API_BASE_URL}${endpoint}`;
+
     return fetch(url, {
       method: "PUT",
       credentials: "include",
@@ -98,8 +110,10 @@ export const apiClient = {
 
   async delete(endpoint: string) {
     const token = getTokenFunction ? await getTokenFunction() : null;
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-    
+    const url = endpoint.startsWith("http")
+      ? endpoint
+      : `${API_BASE_URL}${endpoint}`;
+
     return fetch(url, {
       method: "DELETE",
       credentials: "include",

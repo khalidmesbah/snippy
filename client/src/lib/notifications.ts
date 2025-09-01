@@ -7,32 +7,32 @@ export const showNotification = {
       duration: 4000,
     });
   },
-  
+
   error: (message: string, description?: string) => {
     toast.error(message, {
       description,
       duration: 6000,
     });
   },
-  
+
   info: (message: string, description?: string) => {
     toast.info(message, {
       description,
       duration: 4000,
     });
   },
-  
+
   warning: (message: string, description?: string) => {
     toast.warning(message, {
       description,
       duration: 5000,
     });
   },
-  
+
   loading: (message: string) => {
     return toast.loading(message);
   },
-  
+
   dismiss: (toastId: string | number) => {
     toast.dismiss(toastId);
   },
@@ -41,7 +41,7 @@ export const showNotification = {
 export const handleApiResponse = async <T>(
   apiCall: () => Promise<T>,
   successMessage: string,
-  errorMessage: string = "An error occurred"
+  errorMessage: string = "An error occurred",
 ): Promise<T> => {
   try {
     const result = await apiCall();
@@ -54,7 +54,10 @@ export const handleApiResponse = async <T>(
   }
 };
 
-export const handleApiError = (error: unknown, defaultMessage: string = "An error occurred") => {
+export const handleApiError = (
+  error: unknown,
+  defaultMessage: string = "An error occurred",
+) => {
   const errorMsg = error instanceof Error ? error.message : defaultMessage;
   showNotification.error(defaultMessage, errorMsg);
 };

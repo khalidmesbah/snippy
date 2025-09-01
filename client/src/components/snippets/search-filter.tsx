@@ -1,11 +1,15 @@
-import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Calendar, Filter, Search, Tag, X } from "lucide-react";
+import { useEffect, useId, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Filter, X, Calendar, Tag } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface SearchFilterProps {
   onSearch: (query: string) => void;
@@ -17,17 +21,27 @@ interface SearchFilterProps {
 interface FilterOptions {
   tags: string[];
   favorites: boolean | null; // null = all, true = favorites only, false = non-favorites only
-  dateRange: 'all' | 'today' | 'week' | 'month' | 'year';
+  dateRange: "all" | "today" | "week" | "month" | "year";
 }
 
-export function SearchFilter({ onSearch, onFilterChange, availableTags, onClear }: SearchFilterProps) {
+export function SearchFilter({
+  onSearch,
+  onFilterChange,
+  availableTags,
+  onClear,
+}: SearchFilterProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterOptions>({
     tags: [],
     favorites: null,
-    dateRange: 'all',
+    dateRange: "all",
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Generate unique IDs for form elements
+  const favoritesAllId = useId();
+  const favoritesOnlyId = useId();
+  const favoritesNoneId = useId();
 
   // Debounce search query
   useEffect(() => {
@@ -44,25 +58,25 @@ export function SearchFilter({ onSearch, onFilterChange, availableTags, onClear 
   }, [filters, onFilterChange]);
 
   const handleTagToggle = (tag: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       tags: prev.tags.includes(tag)
-        ? prev.tags.filter(t => t !== tag)
-        : [...prev.tags, tag]
+        ? prev.tags.filter((t) => t !== tag)
+        : [...prev.tags, tag],
     }));
   };
 
   const handleFavoritesToggle = (value: boolean | null) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      favorites: value
+      favorites: value,
     }));
   };
 
-  const handleDateRangeChange = (range: FilterOptions['dateRange']) => {
-    setFilters(prev => ({
+  const handleDateRangeChange = (range: FilterOptions["dateRange"]) => {
+    setFilters((prev) => ({
       ...prev,
-      dateRange: range
+      dateRange: range,
     }));
   };
 
@@ -71,12 +85,15 @@ export function SearchFilter({ onSearch, onFilterChange, availableTags, onClear 
     setFilters({
       tags: [],
       favorites: null,
-      dateRange: 'all',
+      dateRange: "all",
     });
     onClear();
   };
 
-  const hasActiveFilters = filters.tags.length > 0 || filters.favorites !== null || filters.dateRange !== 'all';
+  const hasActiveFilters =
+    filters.tags.length > 0 ||
+    filters.favorites !== null ||
+    filters.dateRange !== "all";
 
   return (
     <div className="space-y-4">
@@ -105,12 +122,18 @@ export function SearchFilter({ onSearch, onFilterChange, availableTags, onClear 
       <div className="flex items-center gap-2">
         <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
               <Filter className="h-4 w-4" />
               Filters
               {hasActiveFilters && (
                 <Badge variant="secondary" className="ml-1">
-                  {filters.tags.length + (filters.favorites !== null ? 1 : 0) + (filters.dateRange !== 'all' ? 1 : 0)}
+                  {filters.tags.length +
+                    (filters.favorites !== null ? 1 : 0) +
+                    (filters.dateRange !== "all" ? 1 : 0)}
                 </Badge>
               )}
             </Button>
@@ -118,7 +141,7 @@ export function SearchFilter({ onSearch, onFilterChange, availableTags, onClear 
           <PopoverContent className="w-80" align="start">
             <div className="space-y-4">
               <h4 className="font-medium">Filter Options</h4>
-              
+
               {/* Tags Filter */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
@@ -129,7 +152,9 @@ export function SearchFilter({ onSearch, onFilterChange, availableTags, onClear 
                   {availableTags.map((tag) => (
                     <Badge
                       key={tag}
-                      variant={filters.tags.includes(tag) ? "default" : "outline"}
+                      variant={
+                        filters.tags.includes(tag) ? "default" : "outline"
+                      }
                       className="cursor-pointer"
                       onClick={() => handleTagToggle(tag)}
                     >
@@ -145,27 +170,27 @@ export function SearchFilter({ onSearch, onFilterChange, availableTags, onClear 
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="favorites-all"
+                      id={favoritesAllId}
                       checked={filters.favorites === null}
                       onCheckedChange={() => handleFavoritesToggle(null)}
                     />
-                    <Label htmlFor="favorites-all">All snippets</Label>
+                    <Label htmlFor={favoritesAllId}>All snippets</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="favorites-only"
+                      id={favoritesOnlyId}
                       checked={filters.favorites === true}
                       onCheckedChange={() => handleFavoritesToggle(true)}
                     />
-                    <Label htmlFor="favorites-only">Favorites only</Label>
+                    <Label htmlFor={favoritesOnlyId}>Favorites only</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="favorites-none"
+                      id={favoritesNoneId}
                       checked={filters.favorites === false}
                       onCheckedChange={() => handleFavoritesToggle(false)}
                     />
-                    <Label htmlFor="favorites-none">Non-favorites only</Label>
+                    <Label htmlFor={favoritesNoneId}>Non-favorites only</Label>
                   </div>
                 </div>
               </div>
@@ -178,11 +203,11 @@ export function SearchFilter({ onSearch, onFilterChange, availableTags, onClear 
                 </Label>
                 <div className="space-y-2">
                   {[
-                    { value: 'all', label: 'All time' },
-                    { value: 'today', label: 'Today' },
-                    { value: 'week', label: 'This week' },
-                    { value: 'month', label: 'This month' },
-                    { value: 'year', label: 'This year' },
+                    { value: "all", label: "All time" },
+                    { value: "today", label: "Today" },
+                    { value: "week", label: "This week" },
+                    { value: "month", label: "This month" },
+                    { value: "year", label: "This year" },
                   ].map(({ value, label }) => (
                     <div key={value} className="flex items-center space-x-2">
                       <Checkbox
@@ -228,26 +253,20 @@ export function SearchFilter({ onSearch, onFilterChange, availableTags, onClear 
               </Badge>
             ))}
             {filters.favorites !== null && (
-              <Badge
-                variant="secondary"
-                className="flex items-center gap-1"
-              >
-                {filters.favorites ? 'Favorites' : 'Non-favorites'}
+              <Badge variant="secondary" className="flex items-center gap-1">
+                {filters.favorites ? "Favorites" : "Non-favorites"}
                 <X
                   className="h-3 w-3 cursor-pointer"
                   onClick={() => handleFavoritesToggle(null)}
                 />
               </Badge>
             )}
-            {filters.dateRange !== 'all' && (
-              <Badge
-                variant="secondary"
-                className="flex items-center gap-1"
-              >
+            {filters.dateRange !== "all" && (
+              <Badge variant="secondary" className="flex items-center gap-1">
                 {filters.dateRange}
                 <X
                   className="h-3 w-3 cursor-pointer"
-                  onClick={() => handleDateRangeChange('all')}
+                  onClick={() => handleDateRangeChange("all")}
                 />
               </Badge>
             )}

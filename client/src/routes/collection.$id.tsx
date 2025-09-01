@@ -1,12 +1,15 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useUser } from "@clerk/clerk-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AuthWrapper } from "@/components/auth-wrapper";
-import { SnippetsGrid } from "@/components/snippets/snippets-grid";
 import { CollectionHeader } from "@/components/collections/collection-header";
-import { getCollectionWithSnippets, updateCollectionSnippetPositions } from "@/lib/api/collections";
+import { SnippetsGrid } from "@/components/snippets/snippets-grid";
 import type { PositionUpdate } from "@/lib/api/collections";
+import {
+  getCollectionWithSnippets,
+  updateCollectionSnippetPositions,
+} from "@/lib/api/collections";
 import { showNotification } from "@/lib/notifications";
 
 export const Route = createFileRoute("/collection/$id")({
@@ -22,7 +25,7 @@ function CollectionDetailPage() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [hasPendingChanges, setHasPendingChanges] = useState(false);
+  const [_hasPendingChanges, setHasPendingChanges] = useState(false);
 
   // Fetch collection with snippets
   const {
@@ -40,7 +43,8 @@ function CollectionDetailPage() {
 
   // Update snippet positions mutation
   const updatePositionsMutation = useMutation({
-    mutationFn: (positions: PositionUpdate[]) => updateCollectionSnippetPositions(id, positions),
+    mutationFn: (positions: PositionUpdate[]) =>
+      updateCollectionSnippetPositions(id, positions),
     onSuccess: () => {
       // Invalidate and refetch collection data
       queryClient.invalidateQueries({ queryKey: ["collection", id] });
@@ -48,14 +52,17 @@ function CollectionDetailPage() {
       showNotification.success("Snippet positions saved successfully");
     },
     onError: (error) => {
-      showNotification.error("Failed to update snippet positions", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "Failed to update snippet positions",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
   });
 
   const collection = collectionData?.data?.collection;
   const snippets = collectionData?.data?.snippets || [];
 
-  const handlePositionsUpdate = (positions: PositionUpdate[]) => {
+  const handlePositionsUpdate = (_positions: PositionUpdate[]) => {
     // This is now just for UI updates, not for saving to the server
     // The actual saving happens when the save button is clicked
   };
@@ -123,17 +130,22 @@ function CollectionDetailPage() {
               </div>
             </div>
           </div>
-          
+
           {/* Snippets Grid Skeleton */}
           <div className="mt-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {Array.from({ length: 8 }, (_, i) => `skeleton-${i}`).map((key) => (
-                <div key={key} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 animate-pulse">
-                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg mx-auto mb-2"></div>
-                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mx-auto"></div>
-                </div>
-              ))}
+              {Array.from({ length: 8 }, (_, i) => `skeleton-${i}`).map(
+                (key) => (
+                  <div
+                    key={key}
+                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 animate-pulse"
+                  >
+                    <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg mx-auto mb-2"></div>
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mx-auto"></div>
+                  </div>
+                ),
+              )}
             </div>
           </div>
         </div>
@@ -171,7 +183,8 @@ function CollectionDetailPage() {
             Collection Not Found
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            The collection you're looking for doesn't exist or you don't have permission to view it.
+            The collection you're looking for doesn't exist or you don't have
+            permission to view it.
           </p>
         </div>
       </div>
@@ -184,7 +197,9 @@ function CollectionDetailPage() {
       <CollectionHeader
         collection={collection}
         snippetCount={snippets.length}
-        onAddSnippet={() => navigate({ to: "/add-snippet", search: { collectionId: id } })}
+        onAddSnippet={() =>
+          navigate({ to: "/add-snippet", search: { collectionId: id } })
+        }
         onEditSuccess={handleEditSuccess}
         onDeleteSuccess={handleDeleteSuccess}
       />

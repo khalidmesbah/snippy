@@ -1,46 +1,64 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import type { Tag, Collection, Snippet, SnippetFormData } from "@/types";
 import {
   AdmonitionDirectiveDescriptor,
   BlockTypeSelect,
   BoldItalicUnderlineToggles,
   CodeToggle,
   CreateLink,
+  codeBlockPlugin,
+  codeMirrorPlugin,
+  directivesPlugin,
   HighlightToggle,
+  headingsPlugin,
   InsertAdmonition,
   InsertCodeBlock,
   InsertImage,
   InsertSandpack,
   InsertTable,
   InsertThematicBreak,
-  ListsToggle,
-  MDXEditor,
-  Separator,
-  StrikeThroughSupSubToggles,
-  UndoRedo,
-  codeBlockPlugin,
-  codeMirrorPlugin,
-  directivesPlugin,
-  headingsPlugin,
   imagePlugin,
+  ListsToggle,
   linkDialogPlugin,
   linkPlugin,
   listsPlugin,
+  MDXEditor,
   markdownShortcutPlugin,
   quotePlugin,
+  type SandpackConfig,
+  Separator,
+  StrikeThroughSupSubToggles,
   sandpackPlugin,
   tablePlugin,
   thematicBreakPlugin,
   toolbarPlugin,
-  type SandpackConfig,
+  UndoRedo,
 } from "@mdxeditor/editor";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import type { SnippetFormData } from "@/types";
 import "@mdxeditor/editor/style.css";
 
+import { oneDark } from "@codemirror/theme-one-dark";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Code2,
+  FolderOpen,
+  FolderPlus,
+  Globe,
+  Heart,
+  Plus,
+  RotateCcw,
+  Save,
+  Sparkles,
+  Tag as TagIcon,
+  Trash2,
+} from "lucide-react";
+import { MultiSelect } from "@/components/multi-select";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import {
   Form,
   FormControl,
@@ -50,51 +68,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Switch } from "@/components/ui/switch";
-import { MultiSelect } from "@/components/multi-select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Plus,
-  Code2,
-  Globe,
-  Heart,
-  FolderOpen,
-  Tag as TagIcon,
-  Sparkles,
-  RotateCcw,
-  Save,
-  FolderPlus,
-  Trash2,
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { showNotification } from "@/lib/notifications";
 import { codeBlockLanguages } from "@/lib/codeBlockLanguages";
+import { showNotification } from "@/lib/notifications";
 import { sandpackPresets } from "@/lib/sandpackPresets";
-import { oneDark } from "@codemirror/theme-one-dark";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
-import { LoadingState, ErrorState } from "@/components/Loaders";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+
 import { AuthWrapper } from "@/components/auth-wrapper";
+import { ErrorState, LoadingState } from "@/components/Loaders";
 
 const SANDPACK_CONFIG: SandpackConfig = {
   defaultPreset: "react",
@@ -137,7 +121,7 @@ export function RouteComponent() {
   const queryClient = useQueryClient();
 
   const form = useForm<SnippetFormData>({
-    resolver: zodResolver(snippetSchema) as any,
+    resolver: zodResolver(snippetSchema),
     defaultValues: {
       title: "",
       collectionIds: [],
@@ -149,37 +133,81 @@ export function RouteComponent() {
   });
 
   // Load current snippet
-  const { data: snippet, isLoading, isError, error } = useQuery<ApiSnippet>({
+  const {
+    data: snippet,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<ApiSnippet>({
     queryKey: ["snippets", "detail", id],
     queryFn: async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/snippets/${id}`, { credentials: "include" });
-        if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
+        const res = await fetch(`${API_BASE_URL}/snippets/${id}`, {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          let msg = `Request failed with ${res.status}`;
+          try {
+            const d = await res.json();
+            msg = d?.error || d?.message || msg;
+          } catch {}
+          throw new Error(msg);
+        }
         const data = await res.json().catch(() => ({}));
         return (data?.data ?? data) as ApiSnippet;
       } catch (error) {
-        showNotification.error("Failed to fetch snippet", error instanceof Error ? error.message : "An error occurred");
+        showNotification.error(
+          "Failed to fetch snippet",
+          error instanceof Error ? error.message : "An error occurred",
+        );
         throw error;
       }
     },
   });
 
   // Tags
-  const { data: tags = [], isLoading: tagsLoading } = useQuery({ queryKey: ["tags", "list"], queryFn: async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/tags`, { credentials: "include" });
-      if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
-      const data = await res.json().catch(() => ({}));
-      return (data?.data ?? data) as Tag[];
-    } catch (error) {
-      showNotification.error("Failed to fetch tags", error instanceof Error ? error.message : "An error occurred");
-      throw error;
-    }
-  } });
+  const { data: tags = [], isLoading: tagsLoading } = useQuery({
+    queryKey: ["tags", "list"],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/tags`, {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          let msg = `Request failed with ${res.status}`;
+          try {
+            const d = await res.json();
+            msg = d?.error || d?.message || msg;
+          } catch {}
+          throw new Error(msg);
+        }
+        const data = await res.json().catch(() => ({}));
+        return (data?.data ?? data) as Tag[];
+      } catch (error) {
+        showNotification.error(
+          "Failed to fetch tags",
+          error instanceof Error ? error.message : "An error occurred",
+        );
+        throw error;
+      }
+    },
+  });
   const createTagMutation = useMutation({
     mutationFn: async (name: string) => {
-      const res = await fetch(`${API_BASE_URL}/tags/create`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, color: "#3b82f6" }) });
-      if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
+      const res = await fetch(`${API_BASE_URL}/tags/create`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, color: "#3b82f6" }),
+      });
+      if (!res.ok) {
+        let msg = `Request failed with ${res.status}`;
+        try {
+          const d = await res.json();
+          msg = d?.error || d?.message || msg;
+        } catch {}
+        throw new Error(msg);
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -187,26 +215,60 @@ export function RouteComponent() {
       showNotification.success("Tag created successfully");
     },
     onError: (error) => {
-      showNotification.error("Failed to create tag", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "Failed to create tag",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
   });
 
   // Collections
-  const { data: collections = [], isLoading: collectionsLoading, refetch: refetchCollections } = useQuery({ queryKey: ["collections", "list"], queryFn: async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/collections`, { credentials: "include" });
-      if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
-      const data = await res.json().catch(() => ({}));
-      return (data?.data ?? data) as Collection[];
-    } catch (error) {
-      showNotification.error("Failed to fetch collections", error instanceof Error ? error.message : "An error occurred");
-      throw error;
-    }
-  } });
+  const {
+    data: collections = [],
+    isLoading: collectionsLoading,
+    refetch: refetchCollections,
+  } = useQuery({
+    queryKey: ["collections", "list"],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/collections`, {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          let msg = `Request failed with ${res.status}`;
+          try {
+            const d = await res.json();
+            msg = d?.error || d?.message || msg;
+          } catch {}
+          throw new Error(msg);
+        }
+        const data = await res.json().catch(() => ({}));
+        return (data?.data ?? data) as Collection[];
+      } catch (error) {
+        showNotification.error(
+          "Failed to fetch collections",
+          error instanceof Error ? error.message : "An error occurred",
+        );
+        throw error;
+      }
+    },
+  });
   const createCollectionMutation = useMutation({
     mutationFn: async (name: string) => {
-      const res = await fetch(`${API_BASE_URL}/collections/create`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, color: "#3b82f6" }) });
-      if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
+      const res = await fetch(`${API_BASE_URL}/collections/create`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, color: "#3b82f6" }),
+      });
+      if (!res.ok) {
+        let msg = `Request failed with ${res.status}`;
+        try {
+          const d = await res.json();
+          msg = d?.error || d?.message || msg;
+        } catch {}
+        throw new Error(msg);
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -214,15 +276,30 @@ export function RouteComponent() {
       showNotification.success("Collection created successfully");
     },
     onError: (error) => {
-      showNotification.error("Failed to create collection", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "Failed to create collection",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
   });
 
   // Update snippet
   const updateSnippetMutation = useMutation({
-    mutationFn: async (payload: any) => {
-      const res = await fetch(`${API_BASE_URL}/snippets/${id}`, { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
+    mutationFn: async (payload: SnippetFormData) => {
+      const res = await fetch(`${API_BASE_URL}/snippets/${id}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        let msg = `Request failed with ${res.status}`;
+        try {
+          const d = await res.json();
+          msg = d?.error || d?.message || msg;
+        } catch {}
+        throw new Error(msg);
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -232,7 +309,10 @@ export function RouteComponent() {
       navigate({ to: `/snippet/${id}` });
     },
     onError: (error) => {
-      showNotification.error("Failed to update snippet", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "Failed to update snippet",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
   });
 
@@ -240,14 +320,25 @@ export function RouteComponent() {
   const deleteSnippetMutation = useMutation({
     mutationFn: async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/snippets/${id}`, { method: "DELETE", credentials: "include" });
-        if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
+        const res = await fetch(`${API_BASE_URL}/snippets/${id}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (!res.ok) {
+          let msg = `Request failed with ${res.status}`;
+          try {
+            const d = await res.json();
+            msg = d?.error || d?.message || msg;
+          } catch {}
+          throw new Error(msg);
+        }
         return res.json();
-      } catch (error: any) {
+      } catch (_error: unknown) {
         // Extract meaningful error message
         let errorMessage = "Failed to delete snippet";
         if (error?.response?.status === 500) {
-          errorMessage = "Server error: Unable to delete snippet. Please try again.";
+          errorMessage =
+            "Server error: Unable to delete snippet. Please try again.";
         } else if (error?.response?.status === 404) {
           errorMessage = "Snippet not found or already deleted.";
         } else if (error?.response?.status === 403) {
@@ -266,10 +357,13 @@ export function RouteComponent() {
       showNotification.success("Snippet deleted successfully");
       navigate({ to: "/" });
     },
-    onError: (error: any) => {
-      showNotification.error("Failed to delete snippet", error instanceof Error ? error.message : "An error occurred");
+    onError: (error: unknown) => {
+      showNotification.error(
+        "Failed to delete snippet",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       // Don't retry on client errors (4xx)
       if (error?.response?.status >= 400 && error?.response?.status < 500) {
         return false;
@@ -283,10 +377,10 @@ export function RouteComponent() {
   // Prefill form when snippet loads
   useEffect(() => {
     if (!snippet) return;
-    
+
     const initialCollections = snippet.collection_ids || [];
     const initialTagIds = snippet.tag_ids || [];
-    
+
     // Set form values individually to ensure proper updates
     form.setValue("title", snippet.title || "");
     form.setValue("collectionIds", initialCollections);
@@ -294,7 +388,7 @@ export function RouteComponent() {
     form.setValue("isPublic", !!snippet.is_public);
     form.setValue("isFavorite", !!snippet.is_favorite);
     form.setValue("content", snippet.content || "");
-    
+
     // Also reset the form to ensure all values are properly set
     form.reset({
       title: snippet.title || "",
@@ -306,10 +400,13 @@ export function RouteComponent() {
     });
   }, [snippet, form]);
 
-  const availableTags = useMemo(() => tags.map((t) => ({ label: t.name, value: t.id })), [tags]);
+  const availableTags = useMemo(
+    () => tags.map((t) => ({ label: t.name, value: t.id })),
+    [tags],
+  );
   const collectionOptions = useMemo(
     () => collections.map((c) => ({ label: c.name, value: c.id })),
-    [collections]
+    [collections],
   );
 
   const [newTagInput, setNewTagInput] = useState("");
@@ -322,21 +419,21 @@ export function RouteComponent() {
         form.setValue("tagIds", [...currentTagIds, tagId]);
       }
     },
-    [form]
+    [form],
   );
 
   const handleAddNewTag = useCallback(async () => {
     const trimmed = newTagInput.trim().toLowerCase();
     if (!trimmed) return;
-    
+
     // Check if tag name already exists
-    const existingTag = tags.find(tag => tag.name.toLowerCase() === trimmed);
+    const existingTag = tags.find((tag) => tag.name.toLowerCase() === trimmed);
     if (existingTag) {
       handleAddTag(existingTag.id);
       setNewTagInput("");
       return;
     }
-    
+
     // Create new tag
     const result = await createTagMutation.mutateAsync(trimmed);
     if (result?.data?.id) {
@@ -348,30 +445,50 @@ export function RouteComponent() {
   const handleAddNewCollection = useCallback(async () => {
     const trimmed = newCollectionInput.trim();
     if (!trimmed) return;
-    const exists = collections.some((c) => c.name.toLowerCase() === trimmed.toLowerCase());
+    const exists = collections.some(
+      (c) => c.name.toLowerCase() === trimmed.toLowerCase(),
+    );
     if (exists) {
-      const existing = collections.find((c) => c.name.toLowerCase() === trimmed.toLowerCase());
-      if (existing) form.setValue("collectionIds", [...form.getValues("collectionIds"), existing.id]);
+      const existing = collections.find(
+        (c) => c.name.toLowerCase() === trimmed.toLowerCase(),
+      );
+      if (existing)
+        form.setValue("collectionIds", [
+          ...form.getValues("collectionIds"),
+          existing.id,
+        ]);
       setNewCollectionInput("");
       return;
     }
     await createCollectionMutation.mutateAsync(trimmed);
     await refetchCollections();
-    const created = (collections as any[]).find((c) => c.name.toLowerCase() === trimmed.toLowerCase());
-    if (created) form.setValue("collectionIds", [...form.getValues("collectionIds"), created.id]);
+    const created = collections.find(
+      (c) => c.name.toLowerCase() === trimmed.toLowerCase(),
+    );
+    if (created)
+      form.setValue("collectionIds", [
+        ...form.getValues("collectionIds"),
+        created.id,
+      ]);
     setNewCollectionInput("");
-  }, [newCollectionInput, collections, createCollectionMutation, form, refetchCollections]);
+  }, [
+    newCollectionInput,
+    collections,
+    createCollectionMutation,
+    form,
+    refetchCollections,
+  ]);
 
   const handleDeleteSnippet = useCallback(async () => {
     const snippetTitle = snippet?.title || "this snippet";
     const confirmed = window.confirm(
-      `Are you sure you want to delete "${snippetTitle}"?\n\nThis action cannot be undone and will permanently remove the snippet.`
+      `Are you sure you want to delete "${snippetTitle}"?\n\nThis action cannot be undone and will permanently remove the snippet.`,
     );
-    
+
     if (confirmed) {
       try {
         await deleteSnippetMutation.mutateAsync();
-      } catch (error: any) {
+      } catch (_error: unknown) {
         // Error is already handled by the mutation, but we can add additional handling here if needed
       }
     }
@@ -389,11 +506,12 @@ export function RouteComponent() {
       };
       await updateSnippetMutation.mutateAsync(payload);
     },
-    [updateSnippetMutation]
+    [updateSnippetMutation],
   );
 
   if (isLoading) return <LoadingState label="Loading snippet..." />;
-  if (isError) return <ErrorState message={(error as any)?.message || "Failed to load snippet"} />;
+  if (isError)
+    return <ErrorState message={error?.message || "Failed to load snippet"} />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted p-2 md:p-4">
@@ -461,7 +579,9 @@ export function RouteComponent() {
                               <Input
                                 placeholder="Create a new collection..."
                                 value={newCollectionInput}
-                                onChange={(e) => setNewCollectionInput(e.target.value)}
+                                onChange={(e) =>
+                                  setNewCollectionInput(e.target.value)
+                                }
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter") {
                                     e.preventDefault();
@@ -578,66 +698,66 @@ export function RouteComponent() {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                            <MDXEditor
-                              autoFocus
-                              contentEditableClassName="prose dark:prose-invert"
-                              onChange={field.onChange}
-                              markdown={field.value || snippet?.content || ""}
-                              plugins={[
-                                headingsPlugin(),
-                                listsPlugin(),
-                                linkPlugin(),
-                                quotePlugin(),
-                                markdownShortcutPlugin(),
-                                thematicBreakPlugin(),
-                                linkDialogPlugin(),
-                                imagePlugin(),
-                                tablePlugin(),
-                                directivesPlugin({
-                                  directiveDescriptors: [
-                                    AdmonitionDirectiveDescriptor,
-                                  ],
-                                }),
-                                codeBlockPlugin({
-                                  defaultCodeBlockLanguage: "js",
-                                }),
-                                sandpackPlugin({
-                                  sandpackConfig: SANDPACK_CONFIG,
-                                }),
-                                codeMirrorPlugin({
-                                  codeBlockLanguages,
-                                  codeMirrorExtensions: [oneDark]
-                                }),
-                                toolbarPlugin({
-                                  toolbarContents: () => (
-                                    <>
-                                      <UndoRedo />
-                                      <Separator />
-                                      <BoldItalicUnderlineToggles />
-                                      <CodeToggle />
-                                      <HighlightToggle />
-                                      <Separator />
-                                      <StrikeThroughSupSubToggles />
-                                      <Separator />
-                                      <ListsToggle />
-                                      <Separator />
-                                      <BlockTypeSelect />
-                                      <Separator />
-                                      <CreateLink />
-                                      <InsertImage />
-                                      <Separator />
-                                      <InsertTable />
-                                      <InsertThematicBreak />
-                                      <Separator />
-                                      <InsertCodeBlock />
-                                      <InsertSandpack />
-                                      <Separator />
-                                      <InsertAdmonition />
-                                    </>
-                                  ),
-                                }),
-                              ]}
-                            />
+                          <MDXEditor
+                            autoFocus
+                            contentEditableClassName="prose dark:prose-invert"
+                            onChange={field.onChange}
+                            markdown={field.value || snippet?.content || ""}
+                            plugins={[
+                              headingsPlugin(),
+                              listsPlugin(),
+                              linkPlugin(),
+                              quotePlugin(),
+                              markdownShortcutPlugin(),
+                              thematicBreakPlugin(),
+                              linkDialogPlugin(),
+                              imagePlugin(),
+                              tablePlugin(),
+                              directivesPlugin({
+                                directiveDescriptors: [
+                                  AdmonitionDirectiveDescriptor,
+                                ],
+                              }),
+                              codeBlockPlugin({
+                                defaultCodeBlockLanguage: "js",
+                              }),
+                              sandpackPlugin({
+                                sandpackConfig: SANDPACK_CONFIG,
+                              }),
+                              codeMirrorPlugin({
+                                codeBlockLanguages,
+                                codeMirrorExtensions: [oneDark],
+                              }),
+                              toolbarPlugin({
+                                toolbarContents: () => (
+                                  <>
+                                    <UndoRedo />
+                                    <Separator />
+                                    <BoldItalicUnderlineToggles />
+                                    <CodeToggle />
+                                    <HighlightToggle />
+                                    <Separator />
+                                    <StrikeThroughSupSubToggles />
+                                    <Separator />
+                                    <ListsToggle />
+                                    <Separator />
+                                    <BlockTypeSelect />
+                                    <Separator />
+                                    <CreateLink />
+                                    <InsertImage />
+                                    <Separator />
+                                    <InsertTable />
+                                    <InsertThematicBreak />
+                                    <Separator />
+                                    <InsertCodeBlock />
+                                    <InsertSandpack />
+                                    <Separator />
+                                    <InsertAdmonition />
+                                  </>
+                                ),
+                              }),
+                            ]}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -738,12 +858,15 @@ export function RouteComponent() {
                       <RotateCcw className="mr-2 h-4 w-4" />
                       Cancel
                     </Button>
-                    <Button 
-                      type="button" 
-                      variant="destructive" 
-                      size="lg" 
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="lg"
                       onClick={handleDeleteSnippet}
-                      disabled={deleteSnippetMutation.isPending || updateSnippetMutation.isPending}
+                      disabled={
+                        deleteSnippetMutation.isPending ||
+                        updateSnippetMutation.isPending
+                      }
                       className="w-full h-10"
                     >
                       {deleteSnippetMutation.isPending ? (
@@ -759,10 +882,20 @@ export function RouteComponent() {
                       )}
                     </Button>
                     {updateSnippetMutation.isError && (
-                      <ErrorState message={(updateSnippetMutation.error as any)?.message} />
+                      <ErrorState
+                        message={
+                          updateSnippetMutation.error?.message ||
+                          "An error occurred"
+                        }
+                      />
                     )}
                     {deleteSnippetMutation.isError && (
-                      <ErrorState message={(deleteSnippetMutation.error as any)?.message} />
+                      <ErrorState
+                        message={
+                          deleteSnippetMutation.error?.message ||
+                          "An error occurred"
+                        }
+                      />
                     )}
                   </CardContent>
                 </Card>

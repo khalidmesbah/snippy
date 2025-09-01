@@ -1,8 +1,14 @@
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertTriangle, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, AlertTriangle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { deleteCollection } from "@/lib/api/collections";
 import { showNotification } from "@/lib/notifications";
 import type { Collection } from "@/types/collections";
@@ -13,7 +19,11 @@ interface DeleteCollectionDialogProps {
   trigger?: React.ReactNode;
 }
 
-export function DeleteCollectionDialog({ collection, onSuccess, trigger }: DeleteCollectionDialogProps) {
+export function DeleteCollectionDialog({
+  collection,
+  onSuccess,
+  trigger,
+}: DeleteCollectionDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
@@ -28,7 +38,10 @@ export function DeleteCollectionDialog({ collection, onSuccess, trigger }: Delet
     },
     onError: (error) => {
       setIsSubmitting(false);
-      showNotification.error("Failed to delete collection", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "Failed to delete collection",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
   });
 
@@ -47,7 +60,11 @@ export function DeleteCollectionDialog({ collection, onSuccess, trigger }: Delet
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
+          >
             <Trash2 className="h-4 w-4" />
             <span className="sr-only">Delete collection</span>
           </Button>
@@ -60,7 +77,7 @@ export function DeleteCollectionDialog({ collection, onSuccess, trigger }: Delet
             Delete Collection
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div
@@ -72,7 +89,8 @@ export function DeleteCollectionDialog({ collection, onSuccess, trigger }: Delet
                 {collection.name}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {collection.snippet_count || 0} snippet{(collection.snippet_count || 0) !== 1 ? 's' : ''}
+                {collection.snippet_count || 0} snippet
+                {(collection.snippet_count || 0) !== 1 ? "s" : ""}
               </p>
             </div>
           </div>
@@ -82,7 +100,8 @@ export function DeleteCollectionDialog({ collection, onSuccess, trigger }: Delet
               Are you sure you want to delete this collection?
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              This action cannot be undone. The collection and all its snippets will be permanently deleted.
+              This action cannot be undone. The collection and all its snippets
+              will be permanently deleted.
             </p>
           </div>
 

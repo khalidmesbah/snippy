@@ -1,6 +1,12 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Code2, Globe, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export function AnonymousView() {
   return (
@@ -13,10 +19,19 @@ export function AnonymousView() {
             Discover and share code snippets with the developer community
           </p>
           <div className="flex gap-4 justify-center">
-            <Button onClick={() => { window.location.href = '/sign-in'; }}>
+            <Button
+              onClick={() => {
+                window.location.href = "/sign-in";
+              }}
+            >
               Sign In
             </Button>
-            <Button variant="outline" onClick={() => { window.location.href = '/sign-up'; }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                window.location.href = "/sign-up";
+              }}
+            >
               Create Account
             </Button>
           </div>
@@ -36,7 +51,9 @@ export function AnonymousView() {
           <CardContent>
             <div className="text-center py-8">
               <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Sign in to view featured snippets</p>
+              <p className="text-muted-foreground">
+                Sign in to view featured snippets
+              </p>
               <p className="text-sm text-muted-foreground mt-1">
                 Join thousands of developers sharing their code
               </p>
@@ -55,7 +72,7 @@ export function AnonymousView() {
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="text-center p-6">
               <Globe className="h-12 w-12 text-green-500 mx-auto mb-4" />
@@ -65,7 +82,7 @@ export function AnonymousView() {
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="text-center p-6">
               <Settings className="h-12 w-12 text-blue-500 mx-auto mb-4" />

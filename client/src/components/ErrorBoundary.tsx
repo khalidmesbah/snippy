@@ -11,7 +11,10 @@ type ErrorBoundaryState = {
   error: unknown;
 };
 
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -22,7 +25,10 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: unknown) {
-    showNotification.error("Application Error", error instanceof Error ? error.message : "An unexpected error occurred");
+    showNotification.error(
+      "Application Error",
+      error instanceof Error ? error.message : "An unexpected error occurred",
+    );
   }
 
   handleReset = () => {
@@ -37,12 +43,17 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           <div className="text-center max-w-md">
             <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
             <p className="text-sm text-muted-foreground mb-4">
-              {(this.state.error as any)?.message || "An unexpected error occurred."}
+              {(this.state.error as Error)?.message ||
+                "An unexpected error occurred."}
             </p>
             <button
               type="button"
               className="px-3 py-2 border rounded-md text-sm"
-              onClick={() => (typeof window !== "undefined" ? window.location.reload() : this.handleReset())}
+              onClick={() =>
+                typeof window !== "undefined"
+                  ? window.location.reload()
+                  : this.handleReset()
+              }
             >
               Reload page
             </button>
@@ -50,8 +61,6 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         </div>
       );
     }
-    return this.props.children as any;
+    return this.props.children;
   }
 }
-
-

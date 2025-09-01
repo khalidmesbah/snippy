@@ -1,10 +1,16 @@
-import { useState, useEffect, useId } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Edit2 } from "lucide-react";
+import { useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Edit2 } from "lucide-react";
 import { updateCollection } from "@/lib/api/collections";
 import { showNotification } from "@/lib/notifications";
 import type { Collection } from "@/types/collections";
@@ -26,7 +32,11 @@ interface EditCollectionDialogProps {
   trigger?: React.ReactNode;
 }
 
-export function EditCollectionDialog({ collection, onSuccess, trigger }: EditCollectionDialogProps) {
+export function EditCollectionDialog({
+  collection,
+  onSuccess,
+  trigger,
+}: EditCollectionDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(collection.name);
   const [color, setColor] = useState(collection.color);
@@ -41,18 +51,28 @@ export function EditCollectionDialog({ collection, onSuccess, trigger }: EditCol
   }, [collection]);
 
   const updateCollectionMutation = useMutation({
-    mutationFn: ({ collectionId, updates }: { collectionId: string; updates: { name: string; color: string } }) =>
-      updateCollection(collectionId, updates),
+    mutationFn: ({
+      collectionId,
+      updates,
+    }: {
+      collectionId: string;
+      updates: { name: string; color: string };
+    }) => updateCollection(collectionId, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collections"] });
-      queryClient.invalidateQueries({ queryKey: ["collection", collection.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["collection", collection.id],
+      });
       setOpen(false);
       setIsSubmitting(false);
       onSuccess?.();
     },
     onError: (error) => {
       setIsSubmitting(false);
-      showNotification.error("Failed to update collection", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "Failed to update collection",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
   });
 
@@ -66,7 +86,7 @@ export function EditCollectionDialog({ collection, onSuccess, trigger }: EditCol
       updates: {
         name: name.trim(),
         color: color,
-      }
+      },
     });
   };
 
@@ -107,7 +127,7 @@ export function EditCollectionDialog({ collection, onSuccess, trigger }: EditCol
               autoFocus
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label>Collection Color</Label>
             <div className="flex flex-wrap gap-2">

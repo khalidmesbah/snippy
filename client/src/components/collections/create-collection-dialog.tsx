@@ -1,10 +1,16 @@
-import { useState, useId } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
+import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Palette } from "lucide-react";
 import { createCollection } from "@/lib/api/collections";
 import { showNotification } from "@/lib/notifications";
 
@@ -23,7 +29,9 @@ interface CreateCollectionDialogProps {
   onSuccess?: () => void;
 }
 
-export function CreateCollectionDialog({ onSuccess }: CreateCollectionDialogProps) {
+export function CreateCollectionDialog({
+  onSuccess,
+}: CreateCollectionDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [color, setColor] = useState(DEFAULT_COLORS[0]);
@@ -43,7 +51,10 @@ export function CreateCollectionDialog({ onSuccess }: CreateCollectionDialogProp
     },
     onError: (error) => {
       setIsSubmitting(false);
-      showNotification.error("Failed to create collection", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "Failed to create collection",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
   });
 
@@ -92,7 +103,7 @@ export function CreateCollectionDialog({ onSuccess }: CreateCollectionDialogProp
               autoFocus
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label>Collection Color</Label>
             <div className="flex flex-wrap gap-2">

@@ -1,16 +1,6 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { useUser } from "@clerk/clerk-react";
+import { Edit, Plus, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useId, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,16 +13,30 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Plus, X } from "lucide-react";
-import { useUser } from "@clerk/clerk-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { showNotification } from "@/lib/notifications";
-import type { Tag, CreateTagRequest, UpdateTagRequest } from "@/types";
+import type { CreateTagRequest, Tag, UpdateTagRequest } from "@/types";
 
 export function TagManager() {
   const { user } = useUser();
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Generate unique IDs for form elements
+  const tagNameId = useId();
+  const editTagNameId = useId();
 
   // Create tag state
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -50,14 +54,7 @@ export function TagManager() {
   const [deletingTag, setDeletingTag] = useState<Tag | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Fetch tags on component mount
-  useEffect(() => {
-    if (user) {
-      fetchTags();
-    }
-  }, [user]);
-
-  const fetchTags = async () => {
+  const fetchTags = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch("http://localhost:8080/api/tags", {
@@ -75,13 +72,21 @@ export function TagManager() {
         throw new Error(data.message || "Failed to fetch tags");
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Failed to fetch tags";
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to fetch tags";
       setError(errorMsg);
       showNotification.error("Failed to fetch tags", errorMsg);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Fetch tags on component mount
+  useEffect(() => {
+    if (user) {
+      fetchTags();
+    }
+  }, [user, fetchTags]);
 
   const handleCreateTag = async () => {
     if (!newTagName.trim()) return;
@@ -112,7 +117,8 @@ export function TagManager() {
         throw new Error(data.message || "Failed to create tag");
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Failed to create tag";
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to create tag";
       setError(errorMsg);
       showNotification.error("Failed to create tag", errorMsg);
     } finally {
@@ -161,7 +167,8 @@ export function TagManager() {
         throw new Error(data.message || "Failed to update tag");
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Failed to update tag";
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to update tag";
       setError(errorMsg);
       showNotification.error("Failed to update tag", errorMsg);
     } finally {
@@ -197,7 +204,8 @@ export function TagManager() {
         throw new Error(data.message || "Failed to delete tag");
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Failed to delete tag";
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to delete tag";
       setError(errorMsg);
       showNotification.error("Failed to delete tag", errorMsg);
     } finally {
@@ -252,9 +260,9 @@ export function TagManager() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="tag-name">Tag Name</Label>
+                <Label htmlFor={tagNameId}>Tag Name</Label>
                 <Input
-                  id="tag-name"
+                  id={tagNameId}
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
                   placeholder="Enter tag name..."
@@ -357,9 +365,9 @@ export function TagManager() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="edit-tag-name">Tag Name</Label>
+              <Label htmlFor={editTagNameId}>Tag Name</Label>
               <Input
-                id="edit-tag-name"
+                id={editTagNameId}
                 value={editTagName}
                 onChange={(e) => setEditTagName(e.target.value)}
                 placeholder="Enter tag name..."

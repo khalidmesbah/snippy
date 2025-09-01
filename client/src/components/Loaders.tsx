@@ -1,5 +1,3 @@
-import * as React from "react";
-
 export function LoadingState({ label = "Loading..." }: { label?: string }) {
   return (
     <div className="flex items-center justify-center py-8 text-muted-foreground">
@@ -9,12 +7,19 @@ export function LoadingState({ label = "Loading..." }: { label?: string }) {
   );
 }
 
-export function ErrorState({ message, onRetry }: { message?: string; onRetry?: () => void }) {
+export function ErrorState({
+  message,
+  onRetry,
+}: {
+  message?: string;
+  onRetry?: () => void;
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center">
       <p className="text-red-500 mb-2">{message || "Something went wrong"}</p>
       {onRetry && (
         <button
+          type="button"
           className="text-xs underline text-muted-foreground hover:text-foreground"
           onClick={onRetry}
         >

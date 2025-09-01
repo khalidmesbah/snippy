@@ -277,20 +277,16 @@ export const codeBlockLanguages = {
   xquery: "xquery",
   xq: "xquery",
   zephir: "zephir",
-  zep: "zephir"
+  zep: "zephir",
 } as const;
 
-export type CodeBlockLanguage = typeof codeBlockLanguages[keyof typeof codeBlockLanguages];
+export type CodeBlockLanguage =
+  (typeof codeBlockLanguages)[keyof typeof codeBlockLanguages];
 
 // Remove duplicate values from codeBlockLanguages and update the type accordingly
 
 // First, get unique values from the object
-const uniqueLanguages = Array.from(
-  new Set(Object.values(codeBlockLanguages))
-);
+const uniqueLanguages = Array.from(new Set(Object.values(codeBlockLanguages)));
 
 // Optionally, export the array of unique languages for use elsewhere
 export const codeBlockLanguageList = uniqueLanguages;
-
-// Update the type to only allow unique language values
-export type CodeBlockLanguage = typeof codeBlockLanguageList[number];

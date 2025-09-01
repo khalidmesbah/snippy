@@ -1,32 +1,28 @@
-import * as React from "react";
+import { Link } from "@tanstack/react-router";
 
 import {
-  Home,
+  BookOpen,
+  Bot,
   Command,
   Frame,
-  BookOpen,
+  Home,
   Settings2,
   SquareTerminal,
-  Bot,
 } from "lucide-react";
-
-import {
-  SidebarGroup,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import * as React from "react";
 
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Link } from "@tanstack/react-router";
-
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -53,9 +49,8 @@ function Logo() {
       setAnim(false);
     }, 650);
   };
-;
 
-  console.log("Logo render - anim state:", anim)
+  console.log("Logo render - anim state:", anim);
   return (
     <SidebarMenu>
       <SidebarMenuItem>

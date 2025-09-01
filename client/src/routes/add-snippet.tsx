@@ -34,11 +34,11 @@ import {
   UndoRedo,
 } from "@mdxeditor/editor";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import "@mdxeditor/editor/style.css";
-import type { Tag, Collection, SnippetFormData } from "@/types";
+import { oneDark } from "@codemirror/theme-one-dark";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Code2,
@@ -52,6 +52,7 @@ import {
   Sparkles,
   Tag as TagIcon,
 } from "lucide-react";
+import { AuthWrapper } from "@/components/auth-wrapper";
 import { ErrorState, LoadingState } from "@/components/Loaders";
 import { MultiSelect } from "@/components/multi-select";
 import { Button } from "@/components/ui/button";
@@ -66,18 +67,19 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { AuthWrapper } from "@/components/auth-wrapper";
-import { showNotification } from "@/lib/notifications";
 import { codeBlockLanguages } from "@/lib/codeBlockLanguages";
-import { oneDark } from "@codemirror/theme-one-dark"
+import { showNotification } from "@/lib/notifications";
+import type { Collection, SnippetFormData, Tag } from "@/types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 const DEFAULT_MDX_CONTENT = `# Welcome
 
 This is a **full demo** of MDXEditor with **all plugins and toolbar buttons** enabled.
 `;
 
 import { sandpackPresets } from "@/lib/sandpackPresets";
+
 const SANDPACK_CONFIG: SandpackConfig = {
   defaultPreset: "react",
   presets: sandpackPresets,
@@ -104,8 +106,7 @@ export const Route = createFileRoute("/add-snippet")({
   validateSearch: (search: Record<string, unknown>) => ({
     collectionId: search.collectionId as string | undefined,
   }),
-})
-
+});
 
 export function RouteComponent() {
   const queryClient = useQueryClient();
@@ -113,7 +114,7 @@ export function RouteComponent() {
   const collectionId = search.collectionId;
 
   const form = useForm<SnippetFormData>({
-    resolver: zodResolver(snippetSchema) as any,
+    resolver: zodResolver(snippetSchema),
     defaultValues: {
       title: "",
       collectionIds: [],
@@ -133,22 +134,49 @@ export function RouteComponent() {
     isLoading: tagsLoading,
     isError: tagsError,
     refetch: refetchTags,
-  } = useQuery({ queryKey: ["tags", "list"], queryFn: async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/tags`, { credentials: "include" });
-      if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
-      const data = await res.json().catch(() => ({}));
-      return (data?.data ?? data) as Tag[];
-    } catch (error) {
-      showNotification.error("Failed to fetch tags", error instanceof Error ? error.message : "An error occurred");
-      throw error;
-    }
-  } });
+  } = useQuery({
+    queryKey: ["tags", "list"],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/tags`, {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          let msg = `Request failed with ${res.status}`;
+          try {
+            const d = await res.json();
+            msg = d?.error || d?.message || msg;
+          } catch {}
+          throw new Error(msg);
+        }
+        const data = await res.json().catch(() => ({}));
+        return (data?.data ?? data) as Tag[];
+      } catch (error) {
+        showNotification.error(
+          "Failed to fetch tags",
+          error instanceof Error ? error.message : "An error occurred",
+        );
+        throw error;
+      }
+    },
+  });
 
   const createTagMutation = useMutation({
     mutationFn: async (name: string) => {
-      const res = await fetch(`${API_BASE_URL}/tags/create`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, color: "#3b82f6" }) });
-      if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
+      const res = await fetch(`${API_BASE_URL}/tags/create`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, color: "#3b82f6" }),
+      });
+      if (!res.ok) {
+        let msg = `Request failed with ${res.status}`;
+        try {
+          const d = await res.json();
+          msg = d?.error || d?.message || msg;
+        } catch {}
+        throw new Error(msg);
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -156,7 +184,10 @@ export function RouteComponent() {
       showNotification.success("Tag created successfully");
     },
     onError: (error) => {
-      showNotification.error("Failed to create tag", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "Failed to create tag",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
   });
 
@@ -170,12 +201,24 @@ export function RouteComponent() {
     queryKey: ["collections", "list"],
     queryFn: async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/collections`, { credentials: "include" });
-        if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
+        const res = await fetch(`${API_BASE_URL}/collections`, {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          let msg = `Request failed with ${res.status}`;
+          try {
+            const d = await res.json();
+            msg = d?.error || d?.message || msg;
+          } catch {}
+          throw new Error(msg);
+        }
         const data = await res.json().catch(() => ({}));
         return (data?.data ?? data) as Collection[];
       } catch (error) {
-        showNotification.error("Failed to fetch collections", error instanceof Error ? error.message : "An error occurred");
+        showNotification.error(
+          "Failed to fetch collections",
+          error instanceof Error ? error.message : "An error occurred",
+        );
         throw error;
       }
     },
@@ -184,7 +227,7 @@ export function RouteComponent() {
   // Set collection when collectionId is provided in search params
   useEffect(() => {
     if (collectionId && collections.length > 0) {
-      const collection = collections.find(c => c.id === collectionId);
+      const collection = collections.find((c) => c.id === collectionId);
       if (collection) {
         form.setValue("collectionIds", [collectionId]);
       }
@@ -193,8 +236,20 @@ export function RouteComponent() {
 
   const createCollectionMutation = useMutation({
     mutationFn: async (name: string) => {
-      const res = await fetch(`${API_BASE_URL}/collections/create`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, color: "#3b82f6" }) });
-      if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
+      const res = await fetch(`${API_BASE_URL}/collections/create`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, color: "#3b82f6" }),
+      });
+      if (!res.ok) {
+        let msg = `Request failed with ${res.status}`;
+        try {
+          const d = await res.json();
+          msg = d?.error || d?.message || msg;
+        } catch {}
+        throw new Error(msg);
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -202,15 +257,30 @@ export function RouteComponent() {
       showNotification.success("Collection created successfully");
     },
     onError: (error) => {
-      showNotification.error("Failed to create collection", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "Failed to create collection",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
   });
 
   // Create snippet
   const createSnippetMutation = useMutation({
-    mutationFn: async (payload: any) => {
-      const res = await fetch(`${API_BASE_URL}/snippets/create`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      if (!res.ok) { let msg = `Request failed with ${res.status}`; try { const d = await res.json(); msg = d?.error || d?.message || msg; } catch {}; throw new Error(msg); }
+    mutationFn: async (payload: SnippetFormData) => {
+      const res = await fetch(`${API_BASE_URL}/snippets/create`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        let msg = `Request failed with ${res.status}`;
+        try {
+          const d = await res.json();
+          msg = d?.error || d?.message || msg;
+        } catch {}
+        throw new Error(msg);
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -219,14 +289,17 @@ export function RouteComponent() {
       queryClient.invalidateQueries({ queryKey: ["collection", collectionId] });
       form.reset();
       showNotification.success("Snippet created successfully");
-      
+
       // Navigate back to collection if we came from one
       if (collectionId) {
         window.location.href = `/collection/${collectionId}`;
       }
     },
     onError: (error) => {
-      showNotification.error("Failed to create snippet", error instanceof Error ? error.message : "An error occurred");
+      showNotification.error(
+        "Failed to create snippet",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     },
   });
 
@@ -235,10 +308,7 @@ export function RouteComponent() {
     () => tags.map((t) => ({ label: t.name, value: t.id })),
     [tags],
   );
-  const tagNames = useMemo(
-    () => tags.map((t) => t.name),
-    [tags],
-  );
+  const tagNames = useMemo(() => tags.map((t) => t.name), [tags]);
   const collectionOptions = useMemo(
     () => collections.map((c) => ({ label: c.name, value: c.id })),
     [collections],
@@ -257,19 +327,19 @@ export function RouteComponent() {
   const handleAddNewTag = useCallback(async () => {
     const trimmed = newTagInput.trim().toLowerCase();
     if (!trimmed) return;
-    
+
     // Check if tag name already exists
-    const existingTag = tagNames.find(tag => tag.toLowerCase() === trimmed);
+    const existingTag = tagNames.find((tag) => tag.toLowerCase() === trimmed);
     if (existingTag) {
       // Find the tag object to get its ID
-      const tagObj = tags.find(t => t.name === existingTag);
-      if (tagObj && tagObj.id) {
+      const tagObj = tags.find((t) => t.name === existingTag);
+      if (tagObj?.id) {
         handleAddTag(tagObj.id);
       }
       setNewTagInput("");
       return;
     }
-    
+
     // Create new tag
     const result = await createTagMutation.mutateAsync(trimmed);
     if (result?.data?.id) {
@@ -330,7 +400,7 @@ export function RouteComponent() {
         collection_ids: values.collectionIds,
       };
       await createSnippetMutation.mutateAsync(payload);
-      
+
       // Reset form after successful submission
       form.reset();
       setNewTagInput("");
@@ -537,66 +607,66 @@ export function RouteComponent() {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                            <MDXEditor
-                              autoFocus
-                              contentEditableClassName="prose dark:prose-invert"
-                              onChange={field.onChange}
-                              markdown={field.value}
-                              plugins={[
-                                headingsPlugin(),
-                                listsPlugin(),
-                                linkPlugin(),
-                                quotePlugin(),
-                                markdownShortcutPlugin(),
-                                thematicBreakPlugin(),
-                                linkDialogPlugin(),
-                                imagePlugin(),
-                                tablePlugin(),
-                                directivesPlugin({
-                                  directiveDescriptors: [
-                                    AdmonitionDirectiveDescriptor,
-                                  ],
-                                }),
-                                codeBlockPlugin({
-                                  defaultCodeBlockLanguage: "text",
-                                }),
-                                sandpackPlugin({
-                                  sandpackConfig: SANDPACK_CONFIG,
-                                }),
-                                codeMirrorPlugin({
-                                  codeBlockLanguages,
-                                  codeMirrorExtensions: [oneDark]
-                                }),
-                                toolbarPlugin({
-                                  toolbarContents: () => (
-                                    <>
-                                      <UndoRedo />
-                                      <Separator />
-                                      <BoldItalicUnderlineToggles />
-                                      <CodeToggle />
-                                      <HighlightToggle />
-                                      <Separator />
-                                      <StrikeThroughSupSubToggles />
-                                      <Separator />
-                                      <ListsToggle />
-                                      <Separator />
-                                      <BlockTypeSelect />
-                                      <Separator />
-                                      <CreateLink />
-                                      <InsertImage />
-                                      <Separator />
-                                      <InsertTable />
-                                      <InsertThematicBreak />
-                                      <Separator />
-                                      <InsertCodeBlock />
-                                      <InsertSandpack />
-                                      <Separator />
-                                      <InsertAdmonition />
-                                    </>
-                                  ),
-                                }),
-                              ]}
-                            />
+                          <MDXEditor
+                            autoFocus
+                            contentEditableClassName="prose dark:prose-invert"
+                            onChange={field.onChange}
+                            markdown={field.value}
+                            plugins={[
+                              headingsPlugin(),
+                              listsPlugin(),
+                              linkPlugin(),
+                              quotePlugin(),
+                              markdownShortcutPlugin(),
+                              thematicBreakPlugin(),
+                              linkDialogPlugin(),
+                              imagePlugin(),
+                              tablePlugin(),
+                              directivesPlugin({
+                                directiveDescriptors: [
+                                  AdmonitionDirectiveDescriptor,
+                                ],
+                              }),
+                              codeBlockPlugin({
+                                defaultCodeBlockLanguage: "text",
+                              }),
+                              sandpackPlugin({
+                                sandpackConfig: SANDPACK_CONFIG,
+                              }),
+                              codeMirrorPlugin({
+                                codeBlockLanguages,
+                                codeMirrorExtensions: [oneDark],
+                              }),
+                              toolbarPlugin({
+                                toolbarContents: () => (
+                                  <>
+                                    <UndoRedo />
+                                    <Separator />
+                                    <BoldItalicUnderlineToggles />
+                                    <CodeToggle />
+                                    <HighlightToggle />
+                                    <Separator />
+                                    <StrikeThroughSupSubToggles />
+                                    <Separator />
+                                    <ListsToggle />
+                                    <Separator />
+                                    <BlockTypeSelect />
+                                    <Separator />
+                                    <CreateLink />
+                                    <InsertImage />
+                                    <Separator />
+                                    <InsertTable />
+                                    <InsertThematicBreak />
+                                    <Separator />
+                                    <InsertCodeBlock />
+                                    <InsertSandpack />
+                                    <Separator />
+                                    <InsertAdmonition />
+                                  </>
+                                ),
+                              }),
+                            ]}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -703,7 +773,10 @@ export function RouteComponent() {
                     </Button>
                     {createSnippetMutation.isError && (
                       <ErrorState
-                        message={(createSnippetMutation.error as any)?.message}
+                        message={
+                          createSnippetMutation.error?.message ||
+                          "An error occurred"
+                        }
                       />
                     )}
                   </CardContent>

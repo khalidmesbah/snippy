@@ -1,19 +1,18 @@
 // index.tsx
 import { useUser } from "@clerk/clerk-react";
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Filter, X, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Filter, Plus, Search, X } from "lucide-react";
+import { useId, useMemo, useState } from "react";
+import { AuthWrapper } from "@/components/auth-wrapper";
 import { CompactSnippetCard } from "@/components/compact-snippet-card";
 import { MultiSelect } from "@/components/multi-select";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AuthWrapper } from "@/components/auth-wrapper";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { showNotification } from "@/lib/notifications";
-import type { Snippet, Collection, Tag } from "@/types";
 
 export const Route = createFileRoute("/")({
   notFoundComponent: () => <div>Not Found component</div>,
@@ -35,7 +34,10 @@ const fetchSnippets = async () => {
     const data = await response.json();
     return data.data || [];
   } catch (error) {
-    showNotification.error("Failed to fetch snippets", error instanceof Error ? error.message : "An error occurred");
+    showNotification.error(
+      "Failed to fetch snippets",
+      error instanceof Error ? error.message : "An error occurred",
+    );
     throw error;
   }
 };
@@ -50,7 +52,10 @@ const fetchCollections = async () => {
     const data = await response.json();
     return data.data || [];
   } catch (error) {
-    showNotification.error("Failed to fetch collections", error instanceof Error ? error.message : "An error occurred");
+    showNotification.error(
+      "Failed to fetch collections",
+      error instanceof Error ? error.message : "An error occurred",
+    );
     throw error;
   }
 };
@@ -65,7 +70,10 @@ const fetchTags = async () => {
     const data = await response.json();
     return data.data || [];
   } catch (error) {
-    showNotification.error("Failed to fetch tags", error instanceof Error ? error.message : "An error occurred");
+    showNotification.error(
+      "Failed to fetch tags",
+      error instanceof Error ? error.message : "An error occurred",
+    );
     throw error;
   }
 };
@@ -82,6 +90,11 @@ function Home() {
     public: false,
     favorite: false,
   });
+
+  // Generate unique IDs for form elements
+  const tagsFilterId = useId();
+  const collectionsFilterId = useId();
+  const sortFieldId = useId();
 
   const { user, isLoaded } = useUser();
 
@@ -124,7 +137,6 @@ function Home() {
 
   const isLoading = snippetsLoading || collectionsLoading || tagsLoading;
   const error = snippetsError || collectionsError || tagsError;
-
 
   // Transform collections and tags for MultiSelect
   const collectionOptions = useMemo(() => {
@@ -362,10 +374,14 @@ function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               {/* Tags Filter */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label
+                  htmlFor={tagsFilterId}
+                  className="text-sm font-medium text-muted-foreground"
+                >
                   Tags
                 </label>
                 <MultiSelect
+                  id={tagsFilterId}
                   options={tagOptions}
                   value={filters.tags}
                   onValueChange={(tags) =>
@@ -378,10 +394,14 @@ function Home() {
 
               {/* Collections Filter */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label
+                  htmlFor={collectionsFilterId}
+                  className="text-sm font-medium text-muted-foreground"
+                >
                   Collections
                 </label>
                 <MultiSelect
+                  id={collectionsFilterId}
                   options={collectionOptions}
                   value={filters.collections}
                   onValueChange={(collections) =>
@@ -394,9 +414,9 @@ function Home() {
 
               {/* Quick Filters */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-muted-foreground">
+                <div className="text-sm font-medium text-muted-foreground">
                   Quick Filters
-                </label>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant={filters.favorite ? "default" : "outline"}
@@ -428,10 +448,14 @@ function Home() {
             {/* Sort Controls */}
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label
+                  htmlFor={sortFieldId}
+                  className="text-sm font-medium text-muted-foreground"
+                >
                   Sort by:
                 </label>
                 <select
+                  id={sortFieldId}
                   value={sortField}
                   onChange={(e) => setSortField(e.target.value)}
                   className="border rounded px-3 py-1 bg-background text-foreground text-sm"
@@ -508,7 +532,7 @@ function Home() {
           </div>
         ) : (
           filteredSnippets.map((snippet) => (
-                            <CompactSnippetCard key={snippet.id} snippet={snippet} />
+            <CompactSnippetCard key={snippet.id} snippet={snippet} />
           ))
         )}
       </div>

@@ -6,7 +6,10 @@ interface AuthWrapperProps {
   isProtected?: boolean;
 }
 
-export function AuthWrapper({ children, isProtected = true }: AuthWrapperProps) {
+export function AuthWrapper({
+  children,
+  isProtected = true,
+}: AuthWrapperProps) {
   const { user, isLoaded } = useUser();
 
   // If still loading, show nothing (parent component should handle loading)

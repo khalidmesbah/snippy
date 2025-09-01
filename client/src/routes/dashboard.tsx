@@ -1,15 +1,26 @@
 // dashboard.tsx
 import { useUser } from "@clerk/clerk-react";
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Star, GitFork, Clock, Heart, Globe, Eye, Folder, Tag } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  Clock,
+  Eye,
+  Folder,
+  GitFork,
+  Globe,
+  Heart,
+  Plus,
+  Star,
+  Tag,
+} from "lucide-react";
 import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthWrapper } from "@/components/auth-wrapper";
-import { showNotification } from "@/lib/notifications";
 import { CompactSnippetCard } from "@/components/compact-snippet-card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { showNotification } from "@/lib/notifications";
+import type { Collection, Snippet, Tag as TagType } from "@/types";
 
 export const Route = createFileRoute("/dashboard")({
   notFoundComponent: () => <div>Not Found component</div>,
@@ -31,7 +42,10 @@ const fetchSnippets = async () => {
     const data = await response.json();
     return data.data || [];
   } catch (error) {
-    showNotification.error("Failed to fetch snippets", error instanceof Error ? error.message : "An error occurred");
+    showNotification.error(
+      "Failed to fetch snippets",
+      error instanceof Error ? error.message : "An error occurred",
+    );
     throw error;
   }
 };
@@ -46,7 +60,10 @@ const fetchCollections = async () => {
     const data = await response.json();
     return data.data || [];
   } catch (error) {
-    showNotification.error("Failed to fetch collections", error instanceof Error ? error.message : "An error occurred");
+    showNotification.error(
+      "Failed to fetch collections",
+      error instanceof Error ? error.message : "An error occurred",
+    );
     throw error;
   }
 };
@@ -61,12 +78,13 @@ const fetchTags = async () => {
     const data = await response.json();
     return data.data || [];
   } catch (error) {
-    showNotification.error("Failed to fetch tags", error instanceof Error ? error.message : "An error occurred");
+    showNotification.error(
+      "Failed to fetch tags",
+      error instanceof Error ? error.message : "An error occurred",
+    );
     throw error;
   }
 };
-
-
 
 function Dashboard() {
   const { user, isLoaded } = useUser();
@@ -113,69 +131,81 @@ function Dashboard() {
     const source = Array.isArray(rawSnippets) ? rawSnippets : [];
     const collections = Array.isArray(rawCollections) ? rawCollections : [];
     const tags = Array.isArray(rawTags) ? rawTags : [];
-    
+
     // Helper function to enrich snippets with tag names and collection info
-    const enrichSnippet = (snippet: any) => {
-      const tagNames = snippet.tag_ids 
-        ? tags.filter((tag: any) => snippet.tag_ids.includes(tag.id)).map((tag: any) => tag.name)
+    const enrichSnippet = (snippet: Snippet) => {
+      const tagNames = snippet.tag_ids
+        ? tags
+            .filter((tag: TagType) => snippet.tag_ids.includes(tag.id))
+            .map((tag: TagType) => tag.name)
         : [];
-      
-      const collectionId = collections.find((col: any) => 
-        col.snippet_ids && col.snippet_ids.includes(snippet.id)
-      )?.id || null;
-      
+
+      const collectionId =
+        collections.find((col: Collection) =>
+          col.snippet_ids?.includes(snippet.id),
+        )?.id || null;
+
       return {
         ...snippet,
         tag_names: tagNames,
         collection_id: collectionId,
       };
     };
-    
+
     return {
       recentSnippets: [...source]
-        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .sort(
+          (a: Snippet, b: Snippet) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        )
         .slice(0, 5)
         .map(enrichSnippet),
       favoriteSnippets: source
-        .filter((s: any) => s.is_favorite)
-        .sort((a: any, b: any) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+        .filter((s: Snippet) => s.is_favorite)
+        .sort(
+          (a: Snippet, b: Snippet) =>
+            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        )
         .slice(0, 8)
         .map(enrichSnippet),
       forkedSnippets: source
-        .filter((s: any) => s.forked_from !== null)
-        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .filter((s: Snippet) => s.forked_from !== null)
+        .sort(
+          (a: Snippet, b: Snippet) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        )
         .slice(0, 5)
         .map(enrichSnippet),
       popularSnippets: source
-        .filter((s: any) => s.fork_count > 0)
-        .sort((a: any, b: any) => b.fork_count - a.fork_count)
+        .filter((s: Snippet) => s.fork_count > 0)
+        .sort((a: Snippet, b: Snippet) => b.fork_count - a.fork_count)
         .slice(0, 5)
         .map(enrichSnippet),
       topPublicSnippets: source
-        .filter((s: any) => s.is_public)
-        .sort((a: any, b: any) => b.fork_count - a.fork_count)
+        .filter((s: Snippet) => s.is_public)
+        .sort((a: Snippet, b: Snippet) => b.fork_count - a.fork_count)
         .slice(0, 5)
         .map(enrichSnippet),
     };
   }, [rawSnippets, rawCollections, rawTags]);
 
-  const stats = useMemo(
-    () => {
-      const source = Array.isArray(rawSnippets) ? rawSnippets : [];
-      const collections = Array.isArray(rawCollections) ? rawCollections : [];
-      const tags = Array.isArray(rawTags) ? rawTags : [];
-      return {
-        totalCount: source.length,
-        publicCount: source.filter((s: any) => s.is_public).length,
-        favoriteCount: source.filter((s: any) => s.is_favorite).length,
-        forkedCount: source.filter((s: any) => s.forked_from !== null).length,
-        totalForks: source.reduce((sum: number, s: any) => sum + (s.fork_count || 0), 0),
-        collectionsCount: collections.length,
-        tagsCount: tags.length,
-      };
-    },
-    [rawSnippets, rawCollections, rawTags],
-  );
+  const stats = useMemo(() => {
+    const source = Array.isArray(rawSnippets) ? rawSnippets : [];
+    const collections = Array.isArray(rawCollections) ? rawCollections : [];
+    const tags = Array.isArray(rawTags) ? rawTags : [];
+    return {
+      totalCount: source.length,
+      publicCount: source.filter((s: Snippet) => s.is_public).length,
+      favoriteCount: source.filter((s: Snippet) => s.is_favorite).length,
+      forkedCount: source.filter((s: Snippet) => s.forked_from !== null).length,
+      totalForks: source.reduce(
+        (sum: number, s: Snippet) => sum + (s.fork_count || 0),
+        0,
+      ),
+      collectionsCount: collections.length,
+      tagsCount: tags.length,
+    };
+  }, [rawSnippets, rawCollections, rawTags]);
 
   // Loading state
   if (!isLoaded || snippetsLoading || collectionsLoading || tagsLoading) {
@@ -196,7 +226,8 @@ function Dashboard() {
         <div className="text-center">
           <p className="text-red-500 mb-2">Error loading data</p>
           <p className="text-sm text-muted-foreground">
-            {(snippetsError || collectionsError || tagsError)?.message || "Something went wrong"}
+            {(snippetsError || collectionsError || tagsError)?.message ||
+              "Something went wrong"}
           </p>
           <Button
             variant="outline"

@@ -1,19 +1,19 @@
 // explore.tsx
 import { useUser } from "@clerk/clerk-react";
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Filter, X, Search, Globe } from "lucide-react";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Filter, Globe, Plus, Search, X } from "lucide-react";
+import { useId, useMemo, useState } from "react";
+import { AuthWrapper } from "@/components/auth-wrapper";
 import { CompactSnippetCard } from "@/components/compact-snippet-card";
 import { MultiSelect } from "@/components/multi-select";
-import { Button } from "@/components/ui/button";
-import { AuthWrapper } from "@/components/auth-wrapper";
-import { Input } from "@/components/ui/input";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { showNotification } from "@/lib/notifications";
-import type { Snippet, Collection, Tag } from "@/types";
+import type { Collection, Snippet, Tag } from "@/types";
 
 export const Route = createFileRoute("/explore")({
   notFoundComponent: () => <div>Not Found component</div>,
@@ -31,20 +31,27 @@ const fetchPublicSnippets = async (): Promise<Snippet[]> => {
       method: "GET",
       credentials: "include",
     });
-    
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch snippets: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch snippets: ${response.status} ${response.statusText}`,
+      );
     }
-    
+
     const data = await response.json();
-    
+
     // Filter for public snippets on the frontend
     const snippets = data.data || [];
-    const publicSnippets = snippets.filter((snippet: Snippet) => snippet.is_public === true);
-    
+    const publicSnippets = snippets.filter(
+      (snippet: Snippet) => snippet.is_public === true,
+    );
+
     return publicSnippets;
   } catch (error) {
-    showNotification.error("Failed to fetch public snippets", error instanceof Error ? error.message : "An error occurred");
+    showNotification.error(
+      "Failed to fetch public snippets",
+      error instanceof Error ? error.message : "An error occurred",
+    );
     throw error;
   }
 };
@@ -59,7 +66,10 @@ const fetchCollections = async (): Promise<Collection[]> => {
     const data = await response.json();
     return data.data || [];
   } catch (error) {
-    showNotification.error("Failed to fetch collections", error instanceof Error ? error.message : "An error occurred");
+    showNotification.error(
+      "Failed to fetch collections",
+      error instanceof Error ? error.message : "An error occurred",
+    );
     throw error;
   }
 };
@@ -74,7 +84,10 @@ const fetchTags = async (): Promise<Tag[]> => {
     const data = await response.json();
     return data.data || [];
   } catch (error) {
-    showNotification.error("Failed to fetch tags", error instanceof Error ? error.message : "An error occurred");
+    showNotification.error(
+      "Failed to fetch tags",
+      error instanceof Error ? error.message : "An error occurred",
+    );
     throw error;
   }
 };
@@ -91,6 +104,11 @@ function ExplorePage() {
     public: false,
     favorite: false,
   });
+
+  // Generate unique IDs for form elements
+  const tagsFilterId = useId();
+  const collectionsFilterId = useId();
+  const sortFieldId = useId();
 
   const { user, isLoaded } = useUser();
 
@@ -165,8 +183,8 @@ function ExplorePage() {
 
     // Apply collection filter
     if (filters.collections.length > 0) {
-      filtered = filtered.filter(
-        (s) => s.collection_ids && s.collection_ids.some(id => filters.collections.includes(id)),
+      filtered = filtered.filter((s) =>
+        s.collection_ids?.some((id) => filters.collections.includes(id)),
       );
     }
 
@@ -298,7 +316,8 @@ function ExplorePage() {
             Explore Public Snippets
           </h1>
           <p className="text-muted-foreground text-sm">
-            {stats.totalCount} total public snippets • Showing {stats.filteredCount}
+            {stats.totalCount} total public snippets • Showing{" "}
+            {stats.filteredCount}
             {hasActiveFilters && " (filtered)"}
           </p>
         </div>
@@ -373,11 +392,14 @@ function ExplorePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               {/* Tags Filter */}
               <div className="flex flex-col gap-2">
-                <label htmlFor="tags-filter" className="text-sm font-medium text-muted-foreground">
+                <label
+                  htmlFor="tags-filter"
+                  className="text-sm font-medium text-muted-foreground"
+                >
                   Tags
                 </label>
                 <MultiSelect
-                  id="tags-filter"
+                  id={tagsFilterId}
                   options={tagOptions}
                   value={filters.tags}
                   onValueChange={(tags) =>
@@ -390,11 +412,14 @@ function ExplorePage() {
 
               {/* Collections Filter */}
               <div className="flex flex-col gap-2">
-                <label htmlFor="collections-filter" className="text-sm font-medium text-muted-foreground">
+                <label
+                  htmlFor="collections-filter"
+                  className="text-sm font-medium text-muted-foreground"
+                >
                   Collections
                 </label>
                 <MultiSelect
-                  id="collections-filter"
+                  id={collectionsFilterId}
                   options={collectionOptions}
                   value={filters.collections}
                   onValueChange={(collections) =>
@@ -441,11 +466,14 @@ function ExplorePage() {
             {/* Sort Controls */}
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <label htmlFor="sort-field" className="text-sm font-medium text-muted-foreground">
+                <label
+                  htmlFor="sort-field"
+                  className="text-sm font-medium text-muted-foreground"
+                >
                   Sort by:
                 </label>
                 <select
-                  id="sort-field"
+                  id={sortFieldId}
                   value={sortField}
                   onChange={(e) => setSortField(e.target.value)}
                   className="border rounded px-3 py-1 bg-background text-foreground text-sm"
@@ -477,7 +505,8 @@ function ExplorePage() {
       {/* Results Summary */}
       <div className="flex justify-between items-center mb-4">
         <p className="text-sm text-muted-foreground">
-          Showing {filteredSnippets.length} of {stats.totalCount} public snippets
+          Showing {filteredSnippets.length} of {stats.totalCount} public
+          snippets
           {hasActiveFilters && " (filtered)"}
         </p>
 
@@ -505,7 +534,9 @@ function ExplorePage() {
               </div>
             ) : stats.totalCount === 0 ? (
               <div>
-                <h3 className="text-lg font-medium mb-2">No public snippets yet</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  No public snippets yet
+                </h3>
                 <p className="text-muted-foreground mb-4">
                   There are no public code snippets available at the moment
                 </p>
@@ -522,7 +553,7 @@ function ExplorePage() {
           </div>
         ) : (
           filteredSnippets.map((snippet) => (
-                            <CompactSnippetCard key={snippet.id} snippet={snippet} />
+            <CompactSnippetCard key={snippet.id} snippet={snippet} />
           ))
         )}
       </div>
@@ -532,7 +563,8 @@ function ExplorePage() {
         filteredSnippets.length < stats.totalCount && (
           <div className="text-center mt-8">
             <p className="text-sm text-muted-foreground">
-              Showing {filteredSnippets.length} of {stats.totalCount} public snippets
+              Showing {filteredSnippets.length} of {stats.totalCount} public
+              snippets
             </p>
           </div>
         )}

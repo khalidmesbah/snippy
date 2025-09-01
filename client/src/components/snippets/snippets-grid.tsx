@@ -1,26 +1,25 @@
-import { useState } from "react";
+import type { DragEndEvent } from "@dnd-kit/core";
 import {
-  DndContext,
   closestCenter,
+  DndContext,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import type { DragEndEvent } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
+  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, Move, Save, Star, StarOff, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { CompactSnippetCard } from "@/components/compact-snippet-card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Star, StarOff, Move, Save } from "lucide-react";
-import { CompactSnippetCard } from "@/components/compact-snippet-card";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
 import { showNotification } from "@/lib/notifications";
 
 interface Snippet {
@@ -38,13 +37,15 @@ interface Snippet {
 
 interface SnippetsGridProps {
   snippets: Snippet[];
-  collectionId: string;
   isLoading: boolean;
   onRefresh: () => void;
-  onPositionsUpdate?: (positions: Array<{id: string, position: number}>) => void;
-  onSavePositions?: (positions: Array<{id: string, position: number}>) => void;
+  onPositionsUpdate?: (
+    positions: Array<{ id: string; position: number }>,
+  ) => void;
+  onSavePositions?: (
+    positions: Array<{ id: string; position: number }>,
+  ) => void;
   isUpdatingPositions?: boolean;
-  onPositionsSaved?: () => void;
   onPendingChanges?: (hasChanges: boolean) => void;
 }
 
@@ -66,11 +67,7 @@ function DraggableSnippetCard({ snippet }: { snippet: Snippet }) {
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="relative"
-    >
+    <div ref={setNodeRef} style={style} className="relative">
       {/* Drag Handle */}
       <button
         {...attributes}
@@ -89,16 +86,14 @@ function DraggableSnippetCard({ snippet }: { snippet: Snippet }) {
   );
 }
 
-export function SnippetsGrid({ 
-  snippets, 
-  collectionId, 
-  isLoading, 
+export function SnippetsGrid({
+  snippets,
+  isLoading,
   onRefresh,
   onPositionsUpdate,
   onSavePositions,
   isUpdatingPositions = false,
-  onPositionsSaved,
-  onPendingChanges
+  onPendingChanges,
 }: SnippetsGridProps) {
   const [items, setItems] = useState<Snippet[]>(snippets);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -109,7 +104,7 @@ export function SnippetsGrid({
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -121,11 +116,11 @@ export function SnippetsGrid({
         const newIndex = items.findIndex((item) => item.id === over?.id);
 
         const newItems = arrayMove(items, oldIndex, newIndex);
-        
+
         // Mark that we have pending changes
         setHasPendingChanges(true);
         onPendingChanges?.(true);
-        
+
         // Call the callback to update positions in the parent (UI only)
         if (onPositionsUpdate) {
           const positions = newItems.map((item, index) => ({
@@ -144,7 +139,7 @@ export function SnippetsGrid({
     if (selectedItems.size === items.length) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(items.map(item => item.id)));
+      setSelectedItems(new Set(items.map((item) => item.id)));
     }
   };
 
@@ -160,28 +155,40 @@ export function SnippetsGrid({
 
   const handleBulkDelete = () => {
     // TODO: Implement bulk delete
-    showNotification.info("Bulk delete", `Deleting ${selectedItems.size} selected snippets`);
+    showNotification.info(
+      "Bulk delete",
+      `Deleting ${selectedItems.size} selected snippets`,
+    );
     setSelectedItems(new Set());
     setIsSelectMode(false);
   };
 
   const handleBulkFavorite = () => {
     // TODO: Implement bulk favorite
-    showNotification.info("Bulk favorite", `Adding ${selectedItems.size} snippets to favorites`);
+    showNotification.info(
+      "Bulk favorite",
+      `Adding ${selectedItems.size} snippets to favorites`,
+    );
     setSelectedItems(new Set());
     setIsSelectMode(false);
   };
 
   const handleBulkUnfavorite = () => {
     // TODO: Implement bulk unfavorite
-    showNotification.info("Bulk unfavorite", `Removing ${selectedItems.size} snippets from favorites`);
+    showNotification.info(
+      "Bulk unfavorite",
+      `Removing ${selectedItems.size} snippets from favorites`,
+    );
     setSelectedItems(new Set());
     setIsSelectMode(false);
   };
 
   const handleBulkMove = () => {
     // TODO: Implement bulk move to another collection
-    showNotification.info("Bulk move", `Moving ${selectedItems.size} snippets to another collection`);
+    showNotification.info(
+      "Bulk move",
+      `Moving ${selectedItems.size} snippets to another collection`,
+    );
     setSelectedItems(new Set());
     setIsSelectMode(false);
   };
@@ -233,7 +240,10 @@ export function SnippetsGrid({
           type="button"
           onClick={() => {
             // TODO: Implement add snippet
-            showNotification.info("Add snippet", "Add snippet functionality coming soon");
+            showNotification.info(
+              "Add snippet",
+              "Add snippet functionality coming soon",
+            );
           }}
           className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
@@ -260,7 +270,7 @@ export function SnippetsGrid({
                 </span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -271,7 +281,7 @@ export function SnippetsGrid({
                 <Move className="h-4 w-4" />
                 Move
               </Button>
-              
+
               <Button
                 variant="outline"
                 size="sm"
@@ -281,7 +291,7 @@ export function SnippetsGrid({
                 <Star className="h-4 w-4" />
                 Favorite
               </Button>
-              
+
               <Button
                 variant="outline"
                 size="sm"
@@ -291,7 +301,7 @@ export function SnippetsGrid({
                 <StarOff className="h-4 w-4" />
                 Unfavorite
               </Button>
-              
+
               <Button
                 variant="destructive"
                 size="sm"
@@ -301,7 +311,7 @@ export function SnippetsGrid({
                 <Trash2 className="h-4 w-4" />
                 Delete
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -322,7 +332,7 @@ export function SnippetsGrid({
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Snippets ({items.length})
         </h3>
-        
+
         <div className="flex items-center gap-2">
           {!isSelectMode && hasPendingChanges && onSavePositions && (
             <Button
@@ -345,7 +355,7 @@ export function SnippetsGrid({
               )}
             </Button>
           )}
-          
+
           {!isSelectMode && (
             <Button
               variant="outline"
@@ -355,12 +365,8 @@ export function SnippetsGrid({
               Select Multiple
             </Button>
           )}
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRefresh}
-          >
+
+          <Button variant="outline" size="sm" onClick={onRefresh}>
             Refresh
           </Button>
         </div>
@@ -395,8 +401,11 @@ export function SnippetsGrid({
 }
 
 function SnippetsGridSkeleton() {
-  const skeletonItems = Array.from({ length: 8 }, (_, index) => `skeleton-${index}`);
-  
+  const skeletonItems = Array.from(
+    { length: 8 },
+    (_, index) => `skeleton-${index}`,
+  );
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {skeletonItems.map((key) => (
@@ -406,13 +415,13 @@ function SnippetsGridSkeleton() {
         >
           {/* Title skeleton */}
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
-          
+
           {/* Content skeleton */}
           <div className="space-y-2">
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded" />
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
           </div>
-          
+
           {/* Tags skeleton */}
           <div className="flex gap-1 mt-3">
             <div className="h-6 w-12 bg-gray-200 dark:bg-gray-700 rounded" />

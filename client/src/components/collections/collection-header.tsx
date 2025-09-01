@@ -1,9 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, Edit2, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit2, Trash2, Plus } from "lucide-react";
-import { EditCollectionDialog } from "./edit-collection-dialog";
-import { DeleteCollectionDialog } from "./delete-collection-dialog";
 import type { Collection } from "@/types/collections";
+import { DeleteCollectionDialog } from "./delete-collection-dialog";
+import { EditCollectionDialog } from "./edit-collection-dialog";
 
 interface CollectionHeaderProps {
   collection: Collection;
@@ -13,12 +13,12 @@ interface CollectionHeaderProps {
   onDeleteSuccess?: () => void;
 }
 
-export function CollectionHeader({ 
-  collection, 
-  snippetCount, 
+export function CollectionHeader({
+  collection,
+  snippetCount,
   onAddSnippet,
   onEditSuccess,
-  onDeleteSuccess 
+  onDeleteSuccess,
 }: CollectionHeaderProps) {
   const navigate = useNavigate();
 
@@ -61,7 +61,7 @@ export function CollectionHeader({
                 {collection.name}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {snippetCount} snippet{snippetCount !== 1 ? 's' : ''}
+                {snippetCount} snippet{snippetCount !== 1 ? "s" : ""}
               </p>
             </div>
           </div>
@@ -75,23 +75,31 @@ export function CollectionHeader({
               Add Snippet
             </Button>
           )}
-          
+
           <EditCollectionDialog
             collection={collection}
             onSuccess={onEditSuccess}
             trigger={
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
                 <Edit2 className="h-4 w-4" />
                 Edit
               </Button>
             }
           />
-          
+
           <DeleteCollectionDialog
             collection={collection}
             onSuccess={onDeleteSuccess}
             trigger={
-              <Button variant="outline" size="sm" className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
+              >
                 <Trash2 className="h-4 w-4" />
                 Delete
               </Button>

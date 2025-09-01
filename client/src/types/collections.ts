@@ -27,9 +27,9 @@ export interface CollectionPosition {
   updated_at: string;
 }
 
-export interface FavoritesCollection extends Omit<Collection, 'id'> {
-  id: 'favorites';
-  name: 'Favorites';
+export interface FavoritesCollection extends Omit<Collection, "id"> {
+  id: "favorites";
+  name: "Favorites";
   is_virtual: true;
 }
 
