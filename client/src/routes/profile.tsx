@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { apiClient } from "@/lib/api-client";
 import { showNotification } from "@/lib/notifications";
 import type { Snippet } from "@/types";
 
@@ -27,10 +28,7 @@ export const Route = createFileRoute("/profile")({
 // API functions
 const fetchSnippets = async () => {
   try {
-    const response = await fetch("http://localhost:8080/api/snippets", {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await apiClient.get("/api/snippets");
     if (!response.ok) throw new Error("Failed to fetch snippets");
     const data = await response.json();
     return data.data || [];
@@ -45,13 +43,7 @@ const fetchSnippets = async () => {
 
 const fetchPublicSnippets = async () => {
   try {
-    const response = await fetch(
-      "http://localhost:8080/api/snippets/my-public",
-      {
-        method: "GET",
-        credentials: "include",
-      },
-    );
+    const response = await apiClient.get("/api/snippets/my-public");
     if (!response.ok) throw new Error("Failed to fetch public snippets");
     const data = await response.json();
     return data.data || [];

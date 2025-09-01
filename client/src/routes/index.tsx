@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { apiClient } from "@/lib/api-client";
 import { showNotification } from "@/lib/notifications";
 
 export const Route = createFileRoute("/")({
@@ -26,10 +27,7 @@ export const Route = createFileRoute("/")({
 // API functions
 const fetchSnippets = async () => {
   try {
-    const response = await fetch("http://localhost:8080/api/snippets", {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await apiClient.get("/api/snippets");
     if (!response.ok) throw new Error("Failed to fetch snippets");
     const data = await response.json();
     return data.data || [];
@@ -44,10 +42,7 @@ const fetchSnippets = async () => {
 
 const fetchCollections = async () => {
   try {
-    const response = await fetch("http://localhost:8080/api/collections", {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await apiClient.get("/api/collections");
     if (!response.ok) throw new Error("Failed to fetch collections");
     const data = await response.json();
     return data.data || [];
@@ -62,10 +57,7 @@ const fetchCollections = async () => {
 
 const fetchTags = async () => {
   try {
-    const response = await fetch("http://localhost:8080/api/tags", {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await apiClient.get("/api/tags");
     if (!response.ok) throw new Error("Failed to fetch tags");
     const data = await response.json();
     return data.data || [];

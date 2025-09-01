@@ -19,6 +19,7 @@ import { CompactSnippetCard } from "@/components/compact-snippet-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiClient } from "@/lib/api-client";
 import { showNotification } from "@/lib/notifications";
 import type { Collection, Snippet, Tag as TagType } from "@/types";
 
@@ -34,10 +35,7 @@ export const Route = createFileRoute("/dashboard")({
 // API functions
 const fetchSnippets = async () => {
   try {
-    const response = await fetch("http://localhost:8080/api/snippets", {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await apiClient.get("/api/snippets");
     if (!response.ok) throw new Error("Failed to fetch snippets");
     const data = await response.json();
     return data.data || [];
@@ -52,10 +50,7 @@ const fetchSnippets = async () => {
 
 const fetchCollections = async () => {
   try {
-    const response = await fetch("http://localhost:8080/api/collections", {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await apiClient.get("/api/collections");
     if (!response.ok) throw new Error("Failed to fetch collections");
     const data = await response.json();
     return data.data || [];
@@ -70,11 +65,8 @@ const fetchCollections = async () => {
 
 const fetchTags = async () => {
   try {
-    const response = await fetch("http://localhost:8080/api/tags", {
-      method: "GET",
-      credentials: "include",
-    });
-    if (!response.ok) throw new Error("Failed to fetch tags");
+    const response = await apiClient.get("/api/tags");
+    if (!response.ok) throw new Error("Fetch tags");
     const data = await response.json();
     return data.data || [];
   } catch (error) {

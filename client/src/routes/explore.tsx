@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { apiClient } from "@/lib/api-client";
 import { showNotification } from "@/lib/notifications";
 import type { Collection, Snippet, Tag } from "@/types";
 
@@ -27,10 +28,7 @@ export const Route = createFileRoute("/explore")({
 // API functions
 const fetchPublicSnippets = async (): Promise<Snippet[]> => {
   try {
-    const response = await fetch("http://localhost:8080/api/snippets/public", {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await apiClient.get("/api/snippets/public");
 
     if (!response.ok) {
       throw new Error(
@@ -58,10 +56,7 @@ const fetchPublicSnippets = async (): Promise<Snippet[]> => {
 
 const fetchCollections = async (): Promise<Collection[]> => {
   try {
-    const response = await fetch("http://localhost:8080/api/collections", {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await apiClient.get("/api/collections");
     if (!response.ok) throw new Error("Failed to fetch collections");
     const data = await response.json();
     return data.data || [];
@@ -76,10 +71,7 @@ const fetchCollections = async (): Promise<Collection[]> => {
 
 const fetchTags = async (): Promise<Tag[]> => {
   try {
-    const response = await fetch("http://localhost:8080/api/tags", {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await apiClient.get("/api/tags");
     if (!response.ok) throw new Error("Failed to fetch tags");
     const data = await response.json();
     return data.data || [];
@@ -275,7 +267,7 @@ function ExplorePage() {
             {error.message || "Something went wrong"}
           </p>
           <div className="text-xs text-muted-foreground mb-4">
-            Make sure your backend server is running on http://localhost:8080
+            Make sure your backend server is running on the configured API URL
           </div>
           <Button
             variant="outline"

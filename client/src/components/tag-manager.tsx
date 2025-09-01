@@ -25,8 +25,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { apiClient } from "@/lib/api-client";
 import { showNotification } from "@/lib/notifications";
-import type { CreateTagRequest, Tag, UpdateTagRequest } from "@/types";
+import type { CreateTagRequest, Tag } from "@/types";
 
 export function TagManager() {
   const { user } = useUser();
@@ -57,9 +58,7 @@ export function TagManager() {
   const fetchTags = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:8080/api/tags", {
-        credentials: "include",
-      });
+      const response = await apiClient.get("/api/tags");
 
       if (!response.ok) {
         throw new Error(`Failed to fetch tags: ${response.statusText}`);
@@ -93,14 +92,9 @@ export function TagManager() {
 
     try {
       setCreating(true);
-      const response = await fetch("http://localhost:8080/api/tags", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ name: newTagName.trim() } as CreateTagRequest),
-      });
+      const response = await apiClient.post("/api/tags", {
+        name: newTagName.trim(),
+      } as CreateTagRequest);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -131,19 +125,9 @@ export function TagManager() {
 
     try {
       setUpdating(true);
-      const response = await fetch(
-        `http://localhost:8080/api/tags/${editingTag.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            name: editTagName.trim(),
-          } as UpdateTagRequest),
-        },
-      );
+      const response = await apiClient.put(`/api/tags/${editingTag.id}`, {
+        name: editTagName.trim(),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -181,13 +165,7 @@ export function TagManager() {
 
     try {
       setDeleting(true);
-      const response = await fetch(
-        `http://localhost:8080/api/tags/${deletingTag.id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
+      const response = await apiClient.delete(`/api/tags/${deletingTag.id}`);
 
       if (!response.ok) {
         const errorData = await response.json();
